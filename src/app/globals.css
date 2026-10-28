@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: #000000;
+    color: #FFFFFF;
+    user-select: none;
+    -webkit-user-select: none;
+    overscroll-behavior-y: none;
+  }
+
+  input, textarea {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
+@layer utilities {
+  .ios-glass {
+    @apply bg-[#1C1C1E]/80 backdrop-blur-xl backdrop-saturate-150 border-white/[0.08];
+  }
+  
+  .ios-card {
+    @apply bg-[#1C1C1E] rounded-2xl border border-white/[0.06];
+  }
+
+  .ios-input {
+    @apply bg-[#2C2C2E] text-white text-base rounded-xl px-3 py-2.5 placeholder:text-[#8E8E93] focus:outline-none focus:ring-2 focus:ring-[#0A84FF] tabular-nums transition-shadow;
+  }
+}
+

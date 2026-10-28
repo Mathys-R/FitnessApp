@@ -1,0 +1,237 @@
+[
+  {
+    "name": "Développé Couché Barre",
+    "primary_muscle": "Pecs",
+    "secondary_muscles": ["Triceps", "Épaules"],
+    "setup_guide": "Cible : Faisceau moyen/sternal des pectoraux. Omoplates resserrées et abaissées sur le banc, pieds ancrés au sol, amener la barre sur le bas des pectoraux."
+  },
+  {
+    "name": "Développé Couché Haltères",
+    "primary_muscle": "Pecs",
+    "secondary_muscles": ["Triceps", "Épaules"],
+    "setup_guide": "Cible : Faisceau moyen des pectoraux avec amplitude d'étirement accrue. Coudes fléchis à ~45°-60° du buste."
+  },
+  {
+    "name": "Développé Incliné Haltères / Smith (30°)",
+    "primary_muscle": "Pecs",
+    "secondary_muscles": ["Épaules", "Triceps"],
+    "setup_guide": "Cible : Faisceau claviculaire (haut des pecs). Inclinaison du banc à 30° maximum pour ne pas transférer la tension sur le deltoïde antérieur."
+  },
+  {
+    "name": "Écartés Poulie Vis-à-Vis / Pec Deck",
+    "primary_muscle": "Pecs",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Isolation des pectoraux en adduction horizontale. Garder le thorax bombé et chercher à rapprocher les biceps/coudes plutôt que les mains."
+  },
+  {
+    "name": "Dips (Buste penché)",
+    "primary_muscle": "Pecs",
+    "secondary_muscles": ["Triceps", "Épaules"],
+    "setup_guide": "Cible : Faisceau inférieur (abdominal) et moyen des pectoraux. Pencher le buste vers l'avant pour maximiser l'étirement pectoral."
+  },
+  {
+    "name": "Tractions Pronation / Neutre",
+    "primary_muscle": "Dos",
+    "secondary_muscles": ["Biceps"],
+    "setup_guide": "Cible : Grand dorsal et Grand rond (largeur du dos). Initier le mouvement en abaissant les épaules (dépression scapulaire) et tirer les coudes vers les hanches."
+  },
+  {
+    "name": "Tirage Vertical Poitrine",
+    "primary_muscle": "Dos",
+    "secondary_muscles": ["Biceps"],
+    "setup_guide": "Cible : Grand dorsal. Prise légèrement supérieure à la largeur d'épaules, tirer les coudes vers le bas et les flancs en bombant le torse."
+  },
+  {
+    "name": "Rowing Horizontal Poulie Basse",
+    "primary_muscle": "Dos",
+    "secondary_muscles": ["Biceps", "Épaules"],
+    "setup_guide": "Cible : Épaisseur du dos (Rhomboïdes, Trapèzes moyens, Grand dorsal). Laisser les omoplates s'étirer en fin d'excentrique puis les resserrer fortement au tirage."
+  },
+  {
+    "name": "Rowing Buste Penché / T-Bar avec Support Poitrine",
+    "primary_muscle": "Dos",
+    "secondary_muscles": ["Biceps", "Épaules"],
+    "setup_guide": "Cible : Haut du dos (Trapèzes moyens/inférieurs, Rhomboïdes, Deltoïde postérieur) si coudes ouverts à 60°, ou Grand dorsal si coudes serrés."
+  },
+  {
+    "name": "Pull-Over Poulie Haute (Bras tendus)",
+    "primary_muscle": "Dos",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Isolation pure du Grand dorsal en extension d'épaule sans intervention des biceps. Amener la corde/barre contre les cuisses."
+  },
+  {
+    "name": "Développé Militaire Haltères / Machine",
+    "primary_muscle": "Épaules",
+    "secondary_muscles": ["Triceps"],
+    "setup_guide": "Cible : Faisceau antérieur et moyen du deltoïde. Banc redressé à ~75°-80°, descendre les haltères jusqu'au niveau du menton/oreilles."
+  },
+  {
+    "name": "Élévations Latérales Haltères",
+    "primary_muscle": "Épaules",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Faisceau moyen (latéral) du deltoïde. Monter les bras dans le plan de l'omoplate (~20° vers l'avant) en poussant les mains loin sur les côtés."
+  },
+  {
+    "name": "Élévations Latérales Poulie Basse",
+    "primary_muscle": "Épaules",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Faisceau moyen du deltoïde avec tension constante dès la position basse d'étirement (poulie à hauteur de main/hanche)."
+  },
+  {
+    "name": "Oiseau / Reverse Pec Deck / Face Pull",
+    "primary_muscle": "Épaules",
+    "secondary_muscles": ["Dos"],
+    "setup_guide": "Cible : Faisceau postérieur (arrière d'épaule) et coiffe des rotateurs. Écarter les bras vers l'arrière sans resserrer excessivement les omoplates au départ."
+  },
+  {
+    "name": "Curl Incliné Haltères",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Chef long du biceps en position d'étirement maximal. Garder les coudes fixes en arrière du buste tout au long de la flexion."
+  },
+  {
+    "name": "Curl Barre EZ / Poulie Basse",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Chefs long et court du biceps brachial. Coudes fixes près des côtes, supination complète sans élan lombaire."
+  },
+  {
+    "name": "Curl Pupitre (Larry Scott / Machine)",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Chef court du biceps et Brachial antérieur (tension maximale en début de mouvement bras devant le buste)."
+  },
+  {
+    "name": "Curl Marteau Haltères / Corde",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Brachio-radial (avant-bras) et Brachial antérieur. Prise neutre stricte."
+  },
+  {
+    "name": "Extension Triceps Poulie Haute (Corde / Barre)",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Chefs latéral et médial du triceps. Coudes verrouillés le long des côtes, extension complète des avant-bras."
+  },
+  {
+    "name": "Extension Triceps Overhead Poulie / Haltère",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Chef long du triceps (étirement maximal grâce à la flexion d'épaule bras au-dessus de la tête)."
+  },
+  {
+    "name": "Barre au Front (Skullcrusher) Barre EZ / Haltères",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Ensemble des 3 chefs du triceps (forte sollicitation du chef long). Descendre la barre derrière le sommet du crâne."
+  },
+  {
+    "name": "Back Squat / Squat Barre",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": ["Fessiers"],
+    "setup_guide": "Cible : Quadriceps (Vaste externe, interne, intermédiaire) et Grand fessier. Gainage abdominal fort, genoux alignés dans l'axe des orteils."
+  },
+  {
+    "name": "Hack Squat / Pendulum Squat",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": ["Fessiers"],
+    "setup_guide": "Cible : Dominante Quadriceps pure. Placer les pieds bas sur le plateau pour maximiser l'avancée des genoux tout en gardant les talons plaqués."
+  },
+  {
+    "name": "Presse à Cuisses (Pieds bas / serrés)",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": ["Fessiers"],
+    "setup_guide": "Cible : Quadriceps. Descendre au maximum d'amplitude tant que le bas du dos et le sacrum restent parfaitement collés au dossier."
+  },
+  {
+    "name": "Leg Extension",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Isolation des 4 chefs du quadriceps (seul exercice recrutant pleinement le Droit fémoral). Pause d'1s en contraction haute."
+  },
+  {
+    "name": "Fentes Marchées / Split Squat (Buste droit)",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": ["Fessiers"],
+    "setup_guide": "Cible : Quadriceps (+ Fessiers). Garder le buste droit et laisser le genou avant avancer au-dessus des orteils."
+  },
+  {
+    "name": "Soulevé de Terre Roumain (RDL) Barre / Haltères",
+    "primary_muscle": "Ischios",
+    "secondary_muscles": ["Fessiers", "Dos"],
+    "setup_guide": "Cible : Ischio-jambiers en étirement maximal et Grand fessier. Pousser les hanches horizontalement vers l'arrière (Hip Hinge), tibias verticaux, barre frôlant les jambes."
+  },
+  {
+    "name": "Leg Curl Assis",
+    "primary_muscle": "Ischios",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Ischio-jambiers (Biceps fémoral, Semi-tendineux, Semi-membraneux) en position pré-étirée grâce à la flexion de hanche assise."
+  },
+  {
+    "name": "Leg Curl Allongé",
+    "primary_muscle": "Ischios",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Ischio-jambiers en raccourcissement complet. Garder le bassin fermement plaqué contre le banc sans cambrer."
+  },
+  {
+    "name": "Hip Thrust Barre / Machine",
+    "primary_muscle": "Fessiers",
+    "secondary_muscles": ["Ischios"],
+    "setup_guide": "Cible : Grand fessier en raccourcissement maximal. Tibias strictement verticaux à 90° en haut, menton rentré, verrouillage pelvien sans cambrer les lombaires."
+  },
+  {
+    "name": "Fentes Bulgares (Buste penché)",
+    "primary_muscle": "Fessiers",
+    "secondary_muscles": ["Quadriceps", "Ischios"],
+    "setup_guide": "Cible : Grand et moyen fessiers en étirement profond. Pencher légèrement le buste à ~30° vers l'avant et garder le tibia avant quasi vertical."
+  },
+  {
+    "name": "Kickback Fessiers Poulie Basse",
+    "primary_muscle": "Fessiers",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Grand fessier (et Moyen fessier si extension légèrement orientée à 30° sur le côté). Bassin fixe, ne pas cambrer le bas du dos."
+  },
+  {
+    "name": "Abductions Hanches Machine",
+    "primary_muscle": "Fessiers",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Moyen et Petit fessiers (galbe supérieur/latéral des fessiers). Dos calé contre le dossier, pousser avec les genoux."
+  },
+  {
+    "name": "Banc à Lombaires 45° (Dos arrondi / Focus Fessiers)",
+    "primary_muscle": "Fessiers",
+    "secondary_muscles": ["Ischios"],
+    "setup_guide": "Cible : Grand fessier et Ischio-jambiers. Haut du dos légèrement arrondi et pieds tournés à 30° vers l'extérieur pour isoler l'extension de hanche."
+  },
+  {
+    "name": "Mollets Debout / Presse (Jambes tendues)",
+    "primary_muscle": "Mollets",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Gastrocnémiens (jumeaux interne et externe). Pause de 1 à 2 secondes en étirement complet en bas avant de remonter sur la pointe des pieds."
+  },
+  {
+    "name": "Mollets Assis Machine",
+    "primary_muscle": "Mollets",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Soléaire (muscle profond du mollet sollicité lorsque le genou est fléchi à 90°). Amplitude maximale."
+  },
+  {
+    "name": "Crunch Poulie Haute",
+    "primary_muscle": "Abdos",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Grand droit de l'abdomen. Garder les hanches fixes et enrouler le buste en rapprochant le sternum du bassin."
+  },
+  {
+    "name": "Relevé de Jambes / Enroulement de Bassin Suspendu",
+    "primary_muscle": "Abdos",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Grand droit de l'abdomen (portion inférieure). Enrouler le bassin vers le haut en fin de mouvement plutôt que de simplement lever les cuisses à 90°."
+  },
+  {
+    "name": "Gainage Planche / Roue Abdominale (Ab Wheel)",
+    "primary_muscle": "Abdos",
+    "secondary_muscles": [],
+    "setup_guide": "Cible : Transverse et Grand droit en anti-extension lombaire. Garder le bassin en légère rétroversion (fessiers et abdos contractés)."
+  }
+]
+

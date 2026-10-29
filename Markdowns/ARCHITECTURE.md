@@ -1,10 +1,12 @@
 # Architecture Logicielle, Design System iOS & Règles IA (`ARCHITECTURE.md`)
 
-## 1. Les 4 Règles d'Or pour le Vibe Coding
-1. **Règle des 200 lignes max par fichier :** Aucun fichier de code applicatif (`.ts`, `.tsx`, `.css`) ne doit dépasser 200 lignes (à l'exception du fichier auto-généré `src/types/database.types.ts`). Les services de domaine sont systématiquement scindés en sous-fichiers thématiques dans un sous-dossier `services/` pour que l'IA garde 100 % du contexte sans halluciner.
+## 1. Les 5 Règles d'Or pour le Vibe Coding
+1. **Règle des 200 lignes max par fichier :** Aucun fichier de code applicatif (`.ts`, `.tsx`, `.css`) ne doit dépasser 200 lignes (à l'exception du fichier auto-généré `src/types/database.types.ts`). Les services de domaine sont systématiquement scindés en sous-fichiers thématiques dans un sous-dossier `services/` (`src/features/*/services/`) pour que l'IA garde 100 % du contexte sans halluciner.
 2. **Isolation stricte des mathématiques (Fonctions Pures) :** Tous les calculs (EMA 7 jours, 1RM Epley & PR dynamiques, TDEE 14 jours révolus, règle de trois des macros et portions décimales) vivent dans `src/lib/math/` sous forme de fonctions TypeScript pures (zéro dépendance à React ou Supabase).
 3. **Zéro appel Supabase dans l'UI :** Il est strictement interdit d'appeler `supabase.from(...)` dans un fichier `.tsx`. Les composants React appellent uniquement les fonctions exposées par les fichiers `src/features/*/services/*.service.ts`.
 4. **Typage strict indexé sur SQL :** Utiliser systématiquement les types générés depuis le schéma PostgreSQL (`src/types/database.types.ts`). Le mot-clé `any` est strictement banni.
+5. **Filtrage PostgREST sur jointures aliasées :** Lors d'une requête Supabase/PostgREST utilisant un alias sur une relation jointe avec `!inner` (ex: `session:workout_sessions!inner` ou jointure imbriquée `session_exercise:workout_session_exercises!inner (session:workout_sessions!inner)`), les clauses de filtrage (`.eq()`, `.gte()`, `.lte()`) DOIVENT impérativement cibler le nom de l'alias (`session.status`, `session_exercise.session.session_date`) et JAMAIS le nom de la table SQL d'origine.
+
 
 ---
 
@@ -14,6 +16,13 @@ Tous les fichiers techniques du socle, du moteur mathématique et des services S
 
 ```text
 FitnessApp/
+├── package.json                                         # [Créé] Configuration & dépendances (Next 15.1.6, React 19, Motion 12.4.2...)
+├── tsconfig.json                                        # [Créé] TypeScript strict, cible ES2022, alias @/* -> ./src/*
+├── tailwind.config.ts                                   # [Créé] Configuration Tailwind CSS (dark mode class)
+├── postcss.config.mjs                                   # [Créé] Configuration PostCSS (tailwindcss, autoprefixer)
+├── next.config.mjs                                      # [Créé] Configuration Next.js (reactStrictMode: true)
+├── .gitignore                                           # [Créé] Exclusions git (node_modules, .next, .env*.local...)
+├── .env.local                                           # [Créé] Variables d'environnement Supabase locales
 ├── Markdowns/                                           # Documentation par phase (allégée sans blocs de code géants)
 │   ├── SPECIFICATION.md
 │   ├── ARCHITECTURE.md
@@ -32,71 +41,71 @@ FitnessApp/
 │       └── exercises_seed.json                          # [Créé] 40 exercices répartis sur 10 groupes musculaires
 ├── supabase/
 │   └── migrations/
-│       └── 001_initial_schema.sql                       # [Créé] Schéma SQL complet, triggers Europe/Paris et RLS
+│       └── 001_initial_schema.sql                       # [Créé] Schéma SQL complet (14 tables, 5 enums, 3 RPCs), triggers Europe/Paris et RLS
 └── src/
-    ├── middleware.ts                                    # [Créé] Protection des routes authentifiées
+    ├── middleware.ts                                    # [OK] Protection des routes authentifiées
     ├── types/
-    │   ├── database.types.ts                            # [À générer en Phase 1 via Supabase CLI]
-    │   └── domain.types.ts                              # [Créé] 10 groupes musculaires & 5 catégories de repas
+    │   ├── database.types.ts                            # [Créé] (14 tables, 5 enums, 3 RPCs)
+    │   └── domain.types.ts                              # [OK] 10 groupes musculaires & 5 catégories de repas
     │
     ├── lib/                                             # CŒUR TECHNIQUE & MATHÉMATIQUE (Pur TS < 200 lignes)
-    │   ├── date.utils.ts                                # [Créé] Dates locales iPhone (anti-bug UTC)
+    │   ├── date.utils.ts                                # [OK] Dates locales iPhone (anti-bug UTC)
     │   ├── supabase/
-    │   │   ├── client.ts                                # [Créé] Client navigateur (@supabase/ssr)
-    │   │   └── server.ts                                # [Créé] Client serveur Next.js 15
+    │   │   ├── client.ts                                # [OK] Client navigateur (@supabase/ssr)
+    │   │   └── server.ts                                # [OK] Client serveur Next.js 15
     │   └── math/
-    │       ├── weight-ema.math.ts                       # [Créé] Moyenne Mobile Exponentielle (7j)
-    │       ├── workout-kpis.math.ts                     # [Créé] 1RM Epley, Tonnage, Volume/muscle, PR dynamiques
-    │       ├── nutrition.math.ts                        # [Créé] Calculs au gramme, Meal Prep & portions décimales
-    │       └── tdee.math.ts                             # [Créé] Maintenance réelle sur 14 jours révolus (J-14 à J-1)
+    │       ├── weight-ema.math.ts                       # [OK] Moyenne Mobile Exponentielle (7j)
+    │       ├── workout-kpis.math.ts                     # [OK] 1RM Epley, Tonnage, Volume/muscle, PR dynamiques
+    │       ├── nutrition.math.ts                        # [OK] Calculs au gramme, Meal Prep & portions décimales
+    │       └── tdee.math.ts                             # [OK] Maintenance réelle sur 14 jours révolus (J-14 à J-1)
     │
     ├── components/                                      # DESIGN SYSTEM & LAYOUT GLOBAL iOS
-    │   ├── ui/                                          # Composants shadcn/ui + Vaul
+    │   ├── ui/                                          # [À CODER - UI] Composants shadcn/ui + Vaul
     │   └── layout/
-    │       ├── BottomNav.tsx                            # [Créé] Barre de navigation iOS translucide (5 onglets)
-    │       └── PageHeader.tsx                           # En-tête mobile standardisé avec flou Liquid Glass
+    │       ├── BottomNav.tsx                            # [OK] Barre de navigation iOS translucide (5 onglets)
+    │       └── PageHeader.tsx                           # [À CODER - UI] En-tête mobile standardisé avec flou Liquid Glass
     │
     ├── features/                                        # MODULES MÉTIER DÉCOUPÉS PAR DOMAINE
     │   ├── daily-log/
-    │   │   ├── components/                              # WeightQuickInput, ProfileTargetsDrawer
-    │   │   └── services/
-    │   │       └── log.service.ts                       # [Créé] Snapshot journalier, Profil & recalcul EMA
+    │   │   ├── components/                              # [À CODER - UI] WeightQuickInput, ProfileTargetsDrawer
+    │   │   └── services/                                # Emplacement des services de domaine (src/features/*/services/)
+    │   │       └── log.service.ts                       # [OK] Snapshot journalier, Profil & recalcul EMA
     │   ├── catalogs/
-    │   │   ├── components/                              # MuscleFilterChips, ExerciseList, FoodList, RecipeBuilderDrawer
-    │   │   └── services/
-    │   │       ├── exercises.service.ts                 # [Créé] CRUD Exercices + auto-seed
-    │   │       └── nutrition.service.ts                 # [Créé] CRUD Aliments ('100g'|'unit'|'both') & Recettes
+    │   │   ├── components/                              # [À CODER - UI] MuscleFilterChips, ExerciseList, FoodList, RecipeBuilderDrawer
+    │   │   └── services/                                # Emplacement des services de domaine (src/features/*/services/)
+    │   │       ├── exercises.service.ts                 # [OK] CRUD Exercices + auto-seed
+    │   │       └── nutrition.service.ts                 # [OK] CRUD Aliments ('100g'|'unit'|'both') & Recettes
     │   ├── workout/
-    │   │   ├── components/                              # WeeklyCalendar, ActiveSession, ExerciseCard, SetRow, FinishSessionDrawer
+    │   │   ├── components/                              # [À CODER - UI] WeeklyCalendar, ActiveSession, ExerciseCard, SetRow, FinishSessionDrawer
     │   │   ├── store/
-    │   │   │   └── active-workout.store.ts              # [Créé] Store anti-crash iOS + 1-Tap Ghost + PR temps réel
-    │   │   └── services/
-    │   │       ├── presets.service.ts                   # [Créé] Ghost Values (tri session_date) & CRUD Presets
-    │   │       ├── sessions.service.ts                  # [Créé] Sauvegarde, suppression séance & notes épinglées
-    │   │       └── calendar.service.ts                  # [Créé] Agenda Lundi->Dimanche & chargement pour ré-édition
+    │   │   │   └── active-workout.store.ts              # [OK] Store anti-crash iOS + 1-Tap Ghost + PR temps réel
+    │   │   └── services/                                # Emplacement des services de domaine (src/features/*/services/)
+    │   │       ├── presets.service.ts                   # [OK] Ghost Values (tri session_date) & CRUD Presets [Patch PostgREST]
+    │   │       ├── sessions.service.ts                  # [OK] Sauvegarde, suppression séance & notes épinglées
+    │   │       └── calendar.service.ts                  # [OK] Agenda Lundi->Dimanche & chargement pour ré-édition
     │   ├── nutrition/
-    │   │   ├── components/                              # DailyMacroSummary, MealCard, RecipeSubmenuAccordion, AddNutritionItemDrawer
-    │   │   └── services/
-    │   │       ├── entries.service.ts                   # [Créé] Ajout/Édition/Suppression aliment & copie couple
-    │   │       └── recipes.service.ts                   # [Créé] Clonage recette (portions décimales) & override
+    │   │   ├── components/                              # [À CODER - UI] DailyMacroSummary, MealCard, RecipeSubmenuAccordion, AddNutritionItemDrawer
+    │   │   └── services/                                # Emplacement des services de domaine (src/features/*/services/)
+    │   │       ├── entries.service.ts                   # [OK] Ajout/Édition/Suppression aliment & copie couple
+    │   │       └── recipes.service.ts                   # [OK] Clonage recette (portions décimales) & override
     │   └── analytics/
-    │       ├── components/                              # WeightEmaChart, OneRmChart, MuscleRadar, TdeeBanner, ExportDataCard
-    │       └── services/
-    │           ├── kpis.service.ts                      # [Créé] TDEE 14j révolus, 1RM (session_date) & Volume Lundi->Dimanche
-    │           └── export.service.ts                    # [Créé] Export JSON complet + Bundle de 3 fichiers CSV
+    │       ├── components/                              # [À CODER - UI] WeightEmaChart, OneRmChart, MuscleRadar, TdeeBanner, ExportDataCard
+    │       └── services/                                # Emplacement des services de domaine (src/features/*/services/)
+    │           ├── kpis.service.ts                      # [OK] TDEE 14j révolus, 1RM (session_date) & Volume Lundi->Dimanche [Patch PostgREST]
+    │           └── export.service.ts                    # [OK] Export JSON complet + Bundle de 3 fichiers CSV
     │
     └── app/                                             # ROUTAGE NEXT.JS (Pages légères d'assemblage)
-        ├── globals.css                                  # [Créé] Styles globaux iOS Native Feel, OLED #000000, SF Pro
-        ├── layout.tsx                                   # [Créé] Root layout PWA (viewportFit: cover, Vaul, Sonner)
+        ├── globals.css                                  # [OK] Styles globaux iOS Native Feel, OLED #000000, SF Pro
+        ├── layout.tsx                                   # [OK] Root layout PWA (viewportFit: cover, Vaul, Sonner)
         ├── (auth)/
-        │   └── login/page.tsx
+        │   └── login/page.tsx                           # [À CODER - UI] Page de connexion couple
         └── (protected)/
-            ├── layout.tsx
-            ├── page.tsx                                 # Onglet 1 : Aujourd'hui
-            ├── workout/page.tsx                         # Onglet 2 : Musculation
-            ├── nutrition/page.tsx                       # Onglet 3 : Nutrition
-            ├── catalogs/page.tsx                        # Onglet 4 : Catalogues
-            └── analytics/page.tsx                       # Onglet 5 : Stats, TDEE & Export
+            ├── layout.tsx                               # [À CODER - UI] Layout protégé avec BottomNav
+            ├── page.tsx                                 # [À CODER - UI] Onglet 1 : Aujourd'hui
+            ├── workout/page.tsx                         # [À CODER - UI] Onglet 2 : Musculation
+            ├── nutrition/page.tsx                       # [À CODER - UI] Onglet 3 : Nutrition
+            ├── catalogs/page.tsx                        # [À CODER - UI] Onglet 4 : Catalogues
+            └── analytics/page.tsx                       # [À CODER - UI] Onglet 5 : Stats, TDEE & Export
 ```
 
 ---
@@ -108,6 +117,12 @@ FitnessApp/
 | **1. Math / Domain** | `src/lib/math/*.math.ts` | Calculs purs (EMA, 1RM/PR, macros, TDEE). | Aucun import React, aucun appel réseau/Supabase. |
 | **2. Service / Data** | `src/features/*/services/*.service.ts` | Lecture/Écriture Supabase, gestion des erreurs SQL, transformation des données. | Aucun JSX/HTML, aucune logique d'affichage. |
 | **3. UI / Feature** | `src/features/*/components/*.tsx` | Affichage mobile, gestion des clics, animations, états de chargement. | Aucun appel direct à `supabase.from()`. |
+
+### Règle PostgREST sur les Jointures Aliasées (Couche 2)
+Dans les services Supabase (`src/features/*/services/`), lors de l'exécution de requêtes avec jointures explicites `!inner` aliasées :
+- **Jointure directe aliasée** : Lorsqu'une relation est jointe avec un alias comme `session:workout_sessions!inner`, toute clause de filtrage (`.eq()`, etc.) doit obligatoirement référencer l'alias : `.eq('session.status', 'completed')` (et NON `workout_sessions.status` qui déclenche une erreur PostgREST). *Exemple appliqué : `src/features/workout/services/presets.service.ts:72`.*
+- **Jointure imbriquée multi-niveaux** : Lorsqu'une relation est imbriquée sur plusieurs niveaux (`session_exercise:workout_session_exercises!inner (session:workout_sessions!inner (...))`), les filtres doivent employer le chemin pointé complet des alias : `.gte('session_exercise.session.session_date', mondayIso)` et `.eq('session_exercise.session.status', 'completed')`. *Exemple appliqué : `src/features/analytics/services/kpis.service.ts:149-151`.*
+
 
 ---
 
@@ -157,20 +172,23 @@ Voir [`src/app/globals.css`](../src/app/globals.css) :
 | Technologie / Package | Version Cible | Raison Technique & Compatibilité |
 | :--- | :--- | :--- |
 | **Node.js** | `>= 20.18.0` (LTS) | Requis par Next.js 15 et `@supabase/ssr`. |
-| **`next`** | `^15.2.0` | App Router stable (`await cookies()` asynchrone). |
-| **`react` / `react-dom`** | `^19.0.0` | Support natif de `@number-flow/react` et `motion`. |
-| **`typescript`** | `^5.7.0` | Typage strict (`strict: true`, zéro `any`). |
-| **`tailwindcss`** | `^3.4.17` | Verrouillé en v3.4.x pour `.ios-glass` et `shadcn/ui`. |
-| **`@supabase/supabase-js`** | `^2.49.0` | Support complet du typage généré `Database` et des appels `.rpc()`. |
-| **`@supabase/ssr`** | `^0.6.1` | Gestion propre des cookies d'authentification Next.js 15. |
-| **`zustand`** | `^5.0.3` | Store anti-crash en séance avec middleware `persist` (`localStorage`). |
-| **`motion`** | `^12.4.0` | `import { motion, AnimatePresence } from "motion/react"`. |
-| **`@number-flow/react`** | `^0.5.10` | Compteurs animés iOS. |
+| **`next`** | `15.1.6` | App Router stable (`await cookies()` asynchrone). |
+| **`react` / `react-dom`** | `19.0.0` (`^19.0.0`) | Support natif de `@number-flow/react` et `motion`. |
+| **`typescript`** | `^5.7.3` | Typage strict (`strict: true`, zéro `any`). |
+| **`tailwindcss`** | `3.4.17` (`^3.4.17`) | Verrouillé en v3.4.x pour `.ios-glass` et `shadcn/ui`. |
+| **`@supabase/supabase-js`** | `2.48.1` (`^2.48.1`) | Support complet du typage généré `Database` et des appels `.rpc()`. |
+| **`@supabase/ssr`** | `0.5.2` (`^0.5.2`) | Gestion propre des cookies d'authentification Next.js 15. |
+| **`zustand`** | `5.0.3` (`^5.0.3`) | Store anti-crash en séance avec middleware `persist` (`localStorage`). |
+| **`motion`** | `12.4.2` (`^12.4.2`) | `import { motion, AnimatePresence } from "motion/react"`. |
+| **`@number-flow/react`** | `0.5.4` (`^0.5.4`) | Compteurs animés iOS. |
+| **`lucide-react`** | `0.475.0` (`^0.475.0`) | Icônes utilitaires pour boutons et contrôles. |
+| **`clsx`** | `2.1.1` (`^2.1.1`) | Concaténation conditionnelle des classes CSS Tailwind. |
+| **`tailwind-merge`** | `3.0.1` (`^3.0.1`) | Fusion sans conflit des classes CSS utilitaires Tailwind. |
 | **`vaul`** | `^1.1.2` | Bottom Sheets iOS natifs. |
 | **`sonner`** | `^2.0.1` | Toasts compacts sous la Dynamic Island. |
-| **`@phosphor-icons/react`** | `^2.1.7` | Icônes style SF Symbols. |
-| **`recharts`** | `^2.15.1` | Courbes EMA 7j, 1RM Epley et graphiques analytiques. |
-| **`date-fns`** | `^4.1.0` | Manipulation fiable des dates au fuseau horaire local de l'iPhone. |
+| **`@phosphor-icons/react`** | `^2.1.7` | Icônes style SF Symbols pour navigation et onglets. |
+| **`recharts`** | `2.15.1` (`^2.15.1`) | Courbes EMA 7j, 1RM Epley et graphiques analytiques. |
+| **`date-fns`** | `4.1.0` (`^4.1.0`) | Manipulation fiable des dates au fuseau horaire local de l'iPhone. |
 
 ---
 
@@ -180,7 +198,8 @@ Voir [`src/app/globals.css`](../src/app/globals.css) :
 - [ ] **TODO 1 (Variables d'environnement) :** Vérifier dans `.env.local` la présence de `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et du `SUPABASE_PROJECT_ID`.
 - [ ] **TODO 2 (Migration SQL) :** Exécuter [`supabase/migrations/001_initial_schema.sql`](../supabase/migrations/001_initial_schema.sql) dans le SQL Editor de Supabase.
 - [ ] **TODO 3 (Test de connexion & RPC) :** Vérifier que la fonction RPC `keepalive_ping()` répond `{"status": "ok"}`.
-- [ ] **TODO 4 (Génération de `src/types/database.types.ts`) :** Exécuter `npx supabase gen types typescript --project-id "<PROJECT_ID>" --schema public > src/types/database.types.ts`.
+- [x] **TODO 4 (Génération de `src/types/database.types.ts`) :** Déjà exécuté et présent dans le dépôt (`[Créé] (14 tables, 5 enums, 3 RPCs)`).
+
 
 ### 7.2 Dates Locales & Types Métier (Fichiers de référence)
 - **Dates locales (Anti-Bug UTC) :** Utiliser exclusivement [`src/lib/date.utils.ts`](../src/lib/date.utils.ts) (`getLocalTodayIso`, `shiftDateIso`, `getWeekDatesIso`, `formatShortFrenchDate`). Interdiction absolue d'utiliser `new Date().toISOString().slice(0, 10)` pour déterminer une date métier.

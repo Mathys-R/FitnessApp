@@ -69,7 +69,7 @@ export async function getExerciseGhostAndRecords(
     `)
     .eq('user_id', user.id)
     .eq('exercise_id', exerciseId)
-    .eq('workout_sessions.status', 'completed');
+    .eq('session.status', 'completed'); // Correctif PostgREST : utilisation de l'alias `session`
 
   if (excludeSessionId) {
     sessionsQuery = sessionsQuery.neq('session_id', excludeSessionId);

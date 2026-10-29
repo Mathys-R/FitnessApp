@@ -146,9 +146,9 @@ export async function getWeeklyMuscleVolume(
     .eq('user_id', user.id)
     .eq('is_completed', true)
     .eq('is_warmup', false)
-    .gte('workout_session_exercises.workout_sessions.session_date', mondayIso)
-    .lte('workout_session_exercises.workout_sessions.session_date', sundayIso)
-    .eq('workout_session_exercises.workout_sessions.status', 'completed');
+    .gte('session_exercise.session.session_date', mondayIso) // Correctif PostgREST : alias imbriqué
+    .lte('session_exercise.session.session_date', sundayIso)
+    .eq('session_exercise.session.status', 'completed');
 
   if (error) throw new Error(`Erreur volume musculaire : ${error.message}`);
 

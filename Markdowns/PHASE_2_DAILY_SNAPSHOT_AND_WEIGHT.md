@@ -26,12 +26,12 @@
 
 ## 3. Fichiers de Code de la Phase 2 (Déjà Extraits dans le Projet)
 
-- **Couche 1 — Moteur Mathématique Pur :** [`src/lib/math/weight-ema.math.ts`](../src/lib/math/weight-ema.math.ts)
+- **Couche 1 — Moteur Mathématique Pur :** [`src/lib/math/weight-ema.math.ts`](../src/lib/math/weight-ema.math.ts) `[OK]` (74 lignes, fonctions TypeScript pures)
   - `roundToTwoDecimals(value)`
   - `computeSingleDayEma(currentWeightKg, previousEmaKg)`
   - `recomputeWeightEmaSeries(points, initialPreviousEmaKg)`
   - `parseDecimalInput(raw)`
-- **Couche 2 — Service Supabase :** [`src/features/daily-log/services/log.service.ts`](../src/features/daily-log/services/log.service.ts)
+- **Couche 2 — Service Supabase :** [`src/features/daily-log/services/log.service.ts`](../src/features/daily-log/services/log.service.ts) `[OK]` (178 lignes, respect strict du plafond < 200 lignes)
   - `getCurrentProfile()`
   - `updateProfileTargets(targets)`
   - `getOrCreateDailyLog(logDate)`
@@ -41,9 +41,9 @@
 
 ---
 
-## 4. Couche 3 — Spécification des Composants UI (`< 200 lignes`)
+## 4. Couche 3 — Spécification des Composants UI (`< 200 lignes`) — `[À CODER - UI]`
 
-### 4.1 `src/features/daily-log/components/WeightQuickInput.tsx` (< 140 lignes)
+### 4.1 `src/features/daily-log/components/WeightQuickInput.tsx` (< 140 lignes) — `[À CODER - UI]`
 - **Rôle :** Carte iOS (`.ios-card`) affichant le poids brut du jour, la tendance lissée EMA 7 jours et un bouton d'ouverture du Bottom Sheet `vaul` de saisie rapide.
 - **Props :** `dailyLog: DailyLogRow`, `previousEmaKg: number | null`, `onWeightUpdated: (updated: DailyLogRow) => void`.
 - **Détails UX iOS :**
@@ -51,7 +51,7 @@
   - Affiche en dessous le badge `EMA 7j : <NumberFlow value={dailyLog.weight_ema_kg ?? 0} /> kg` en Bleu iOS `#0A84FF`.
   - Dans le Drawer `vaul` : un champ `.ios-input` avec `inputMode="decimal"`, boutons rapides `-0.1 kg` / `+0.1 kg` (`min-h-[44px]`), sélecteur de date (`getLocalTodayIso()` par défaut, modifiable pour une saisie rétroactive), et notification `toast.success('Pesée enregistrée')` via `sonner`.
 
-### 4.2 `src/features/daily-log/components/ProfileTargetsDrawer.tsx` (< 160 lignes)
+### 4.2 `src/features/daily-log/components/ProfileTargetsDrawer.tsx` (< 160 lignes) — `[À CODER - UI]`
 - **Rôle :** Bottom Sheet `vaul` permettant de modifier ses cibles actuelles (`current_target_kcal`, `current_target_p`, `current_target_g`, `current_target_l`).
 - **Détails UX iOS :**
   - 4 champs numériques (`inputMode="numeric"`) avec code couleur Apple Fitness :
@@ -62,14 +62,14 @@
   - Bouton **"Calculer Kcal depuis les macros"** ($P \times 4 + G \times 4 + L \times 9$) pour aider l'utilisateur à garder des cibles cohérentes.
   - Mention explicite sous le bouton de sauvegarde : *"S'applique à aujourd'hui et aux prochains jours. L'historique passé reste intact."*
 
-### 4.3 `src/features/analytics/components/WeightEmaChart.tsx` (< 180 lignes)
+### 4.3 `src/features/analytics/components/WeightEmaChart.tsx` (< 180 lignes) — `[À CODER - UI]`
 - **Rôle :** Graphique Recharts (`ResponsiveContainer`, `ComposedChart`) superposant :
   1. Les pesées brutes quotidiennes : points discrets (`Scatter` ou `Line` sans trait avec `dot={{ r: 3, fill: '#8E8E93' }}`).
   2. La courbe de tendance EMA 7 jours : ligne continue fluide (`type="monotone"`, `stroke="#0A84FF"`, `strokeWidth={2.5}`, `dot={false}`).
 - **Filtres rapides en haut de carte :** Segmented Control iOS (`7j`, `30j`, `90j`, `Tout`).
 - **Axe Y dynamique :** `domain={['dataMin - 0.5', 'dataMax + 0.5']}` pour que les variations de 200g soient visuellement lisibles.
 
-### 4.4 Assemblage initial dans `src/app/(protected)/page.tsx` & `analytics/page.tsx`
+### 4.4 Assemblage initial dans `src/app/(protected)/page.tsx` & `analytics/page.tsx` — `[À CODER - UI]`
 - Dans `src/app/(protected)/page.tsx` (Onglet 1 — *Aujourd'hui*) : Intégration de l'en-tête de date, du résumé des cibles du Snapshot du jour et du composant `WeightQuickInput`.
 - Dans `src/app/(protected)/analytics/page.tsx` (Onglet 5 — *Stats & Profil*) : Intégration de `WeightEmaChart` et du bouton ouvrant `ProfileTargetsDrawer`.
 
@@ -77,6 +77,9 @@
 
 ## 5. Checklist de Validation (Definition of Done — Phase 2)
 
+- [x] **Moteur mathématique EMA 7j :** `weight-ema.math.ts` implémenté et vérifié `[OK]` (lissage $EMA_J = Poids_J \times 0.25 + EMA_{J-1} \times 0.75$, recalcul en cascade pour saisies rétroactives).
+- [x] **Service Supabase Daily Log :** `log.service.ts` implémenté et vérifié `[OK]` (gestion profils, snapshot quotidien, cascade EMA, exclusion TDEE, historique).
+- [ ] **Composants UI Phase 2 `[À CODER - UI]` :** Développer `WeightQuickInput.tsx`, `ProfileTargetsDrawer.tsx`, `WeightEmaChart.tsx` et assembler la page `src/app/(protected)/page.tsx`.
 - [ ] **Test unitaire `weight-ema.math.ts` :** Vérifier qu'une première pesée à `80.0 kg` donne `EMA = 80.0`, et qu'une deuxième pesée le lendemain à `79.0 kg` donne $79 \times 0{,}25 + 80 \times 0{,}75 = 79{,}75\text{ kg}$.
 - [ ] **Test de saisie rétroactive :** Saisir un poids à $J-3$, puis modifier le poids de $J-3$ et vérifier dans Supabase que les colonnes `weight_ema_kg` de $J-2$, $J-1$ et $J$ ont toutes été recalculées automatiquement.
 - [ ] **Test du Snapshot Journalier :** Modifier `current_target_kcal` dans `ProfileTargetsDrawer` → vérifier que `daily_logs` d'aujourd'hui prend la nouvelle cible, mais que le `daily_log` d'hier conserve son ancienne cible.

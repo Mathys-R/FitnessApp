@@ -11,6 +11,9 @@ Développer une application mobile personnelle (utilisée en couple : 2 utilisat
 - **Backend & Base de données** : Supabase (PostgreSQL + Authentification + Row Level Security).
 - **Hébergement** : Vercel ou Cloudflare Pages (déploiement continu via GitHub).
 - **Maintien en ligne (Anti-veille)** : GitHub Action (cron tous les 5 jours) effectuant un ping léger sur l'API Supabase pour éviter la mise en pause automatique après 7 jours d'inactivité.
+- **État d'implémentation du projet** :
+  - **100 % de l'architecture fondamentale, du schéma et des services** : Le schéma de base de données complet (14 tables, 5 types ENUM, 3 fonctions RPC, typage TypeScript `src/types/database.types.ts`), les moteurs de calcul mathématiques purs (`src/lib/math/`) et les services de domaine Supabase (`src/features/*/services/`) sont intégralement implémentés, fonctionnels et conformes au plafond strict de 200 lignes par fichier.
+  - **Focus exclusif de la V1 restante** : L'effort de développement restant se concentre exclusivement sur l'assemblage des composants d'interface de la Couche 3 (`src/features/*/components/`, composants `src/components/ui/`) et des routes de pages Next.js (`src/app/`).
 
 ### 1.3 Modèle de confidentialité (Multi-utilisateurs en couple)
 L'application gère deux niveaux d'accès aux données via les règles de sécurité PostgreSQL (`RLS`) :
@@ -122,6 +125,30 @@ L'application gère deux niveaux d'accès aux données via les règles de sécur
        │                       │
        └───────────────────────┴──► [Phase 6 : Analytics, TDEE Croisé & Export 3 CSV]
 ```
+
+### État Réel d'Avancement par Couche (Phases 1 à 6)
+
+L'architecture du projet applique une séparation stricte en 3 couches. L'état d'avancement réel du dépôt s'établit comme suit :
+
+1. **Couche 1 — Moteurs Mathématiques Purs (`src/lib/math/`) : 100 % Implémentée [OK]**
+   - Toutes les fonctions mathématiques pures sont écrites, testées et exemptes de toute dépendance React ou Supabase :
+     - `weight-ema.math.ts` : Lissage exponentiel EMA 7 jours ($\alpha = 0{,}25$) et recalcul en cascade.
+     - `workout-kpis.math.ts` : Calcul 1RM Epley, détection dynamique des PR, tonnage effectif et volume musculaire sur 10 groupes (+1/+0,5).
+     - `nutrition.math.ts` : Calculs proportionnels (100g, unité, both), Meal Prep (diviseur $N$ parts) et mise à l'échelle des portions décimales.
+     - `tdee.math.ts` : Maintenance réelle sur 14 jours révolus ($J-14$ à $J-1$), filtres anti-bruit et seuils de calibration.
+
+2. **Couche 2 — Services de Domaine Supabase (`src/features/*/services/`) & Schéma : 100 % Implémentée [OK]**
+   - Schéma relationnel PostgreSQL complet déployé (`supabase/migrations/001_initial_schema.sql` : 14 tables, 5 enums, 3 RPCs).
+   - Typage TypeScript généré et synchronisé (`src/types/database.types.ts`).
+   - Store Zustand d'entraînement persistant avec résilience anti-crash iOS Safari (`src/features/workout/store/active-workout.store.ts`).
+   - 10 services de domaine couvrant 100 % des besoins des 6 phases (`log.service.ts`, `exercises.service.ts`, `nutrition.service.ts`, `presets.service.ts`, `sessions.service.ts`, `calendar.service.ts`, `entries.service.ts`, `recipes.service.ts`, `kpis.service.ts`, `export.service.ts`).
+   - Tous les services respectent rigoureusement la règle d'or des < 200 lignes par fichier et intègrent les bonnes pratiques PostgREST sur les jointures aliasées (`presets.service.ts`, `kpis.service.ts`).
+
+3. **Couche 3 — Composants UI & Routes de Pages Next.js : En attente d'assemblage [À CODER - UI]**
+   - **Composants existants [OK]** : Layout racine (`src/app/layout.tsx`), styles globaux OLED et utilitaires iOS (`src/app/globals.css`), barre de navigation mobile 5 onglets (`src/components/layout/BottomNav.tsx`).
+   - **Composants restants à coder [À CODER - UI]** : Briques shadcn/ui (`src/components/ui/`), composants de fonctionnalités (`src/features/*/components/`), et pages d'écrans Next.js (`src/app/(auth)/login/page.tsx` et `src/app/(protected)/*/page.tsx`).
+   - **Focus exclusif V1** : L'effort restant pour finaliser la V1 réside exclusivement dans l'assemblage de cette Couche 3 UI et des routes applicatives.
+
 
 ---
 

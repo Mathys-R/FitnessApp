@@ -31,24 +31,24 @@
 
 ## 3. Fichiers de Code de la Phase 5 (Déjà Extraits dans le Projet)
 
-- **Couche 1 — Moteur Mathématique Pur :** [`src/lib/math/nutrition.math.ts`](../src/lib/math/nutrition.math.ts)
+- **Couche 1 — Moteur Mathématique Pur :** [`src/lib/math/nutrition.math.ts`](../src/lib/math/nutrition.math.ts) `[OK]` (134 lignes, fonctions TypeScript pures)
 - **Couche 2 — Services Supabase Scindés (`< 200 lignes`) :**
-  1. **Entrées de Repas, Édition, Suppression & Copie Couple :** [`src/features/nutrition/services/entries.service.ts`](../src/features/nutrition/services/entries.service.ts)
+  1. **Entrées de Repas, Édition, Suppression & Copie Couple RPC :** [`src/features/nutrition/services/entries.service.ts`](../src/features/nutrition/services/entries.service.ts) `[OK]` (189 lignes)
      - `getDailyNutrition(logDate)`
      - `addQuickMealEntry(params)` & `updateQuickMealEntry(params)`
      - `addFoodMealEntry(params)` & `updateFoodMealEntryQuantity(params)`
      - `deleteMealEntry(entryId)`
-     - `getPartnerInfo()` & `copyMealFromSource(params)`
-  2. **Plats Composés (Portions Décimales) & Sous-Ingrédients Clonés :** [`src/features/nutrition/services/recipes.service.ts`](../src/features/nutrition/services/recipes.service.ts)
-     - `addRecipeMealEntryWithClonedItems(params)` (supporte `portionsMultiplier`, ex: `1`, `1.5`, `0.5`)
-     - `updateClonedIngredientQuantity(params)`
+     - `getPartnerInfo()` (appel RPC `get_partner_info`) & `copyMealFromSource(params)` (appel RPC `copy_meal_entries`)
+  2. **Plats Composés (Portions Décimales) & Sous-Ingrédients Clonés :** [`src/features/nutrition/services/recipes.service.ts`](../src/features/nutrition/services/recipes.service.ts) `[OK]` (145 lignes)
+     - `addRecipeMealEntryWithClonedItems(params)` (support des portions décimales via `scaleQuantityByPortions`, ex: `1`, `1.5`, `0.5`)
+     - `updateClonedIngredientQuantity(params)` (mise à jour locale du jour, trigger SQL recalculant les totaux du repas parent)
      - `deleteClonedIngredient(itemId)`
 
 ---
 
-## 4. Couche 3 — Spécification des Composants UI (`< 200 lignes`)
+## 4. Couche 3 — Spécification des Composants UI (`< 200 lignes`) — `[À CODER - UI]`
 
-### 4.1 `src/features/nutrition/components/DailyMacroSummary.tsx` (< 160 lignes)
+### 4.1 `src/features/nutrition/components/DailyMacroSummary.tsx` (< 160 lignes) — `[À CODER - UI]`
 - **Jauge principale des Calories :** Affiche en grand les calories restantes (`target_kcal - consumed_kcal`) et consommées avec `<NumberFlow />` et anneau/barre de progression Rose-Rouge `#FF375F`.
 - **3 Barres de progression Macros (`motion.div` spring) :**
   - Protéines (`#32ADE6`) : `consumed_p / target_p g`
@@ -56,7 +56,7 @@
   - Lipides (`#BF5AF2`) : `consumed_l / target_l g`
 - **Pied de carte :** Switch iOS *"Exclure cette journée du calcul TDEE"* (`exclude_from_tdee`).
 
-### 4.2 `src/features/nutrition/components/MealCard.tsx` (< 170 lignes)
+### 4.2 `src/features/nutrition/components/MealCard.tsx` (< 170 lignes) — `[À CODER - UI]`
 - Une carte `.ios-card` pour chacune des 5 catégories : `Petit-déjeuner`, `Déjeuner`, `Dîner`, `Collation`, `Pré/Post-workout`.
 - **En-tête du repas :** Nom du repas, total `kcal` du repas (`tabular-nums`), bouton `+` (`44x44px`) pour ouvrir `AddNutritionItemDrawer`, et menu rapide `...` proposant :
   1. **Copier mon repas d'hier**
@@ -65,21 +65,27 @@
   - Pour un aliment simple (`food`) ou `quick_add` : clic sur la quantité pour l'éditer en direct (`updateFoodMealEntryQuantity` / `updateQuickMealEntry`) + bouton de suppression (`deleteMealEntry`).
   - Pour un plat composé (`recipe`) : rend le sous-composant `RecipeSubmenuAccordion` + bouton de suppression du plat.
 
-### 4.3 `src/features/nutrition/components/RecipeSubmenuAccordion.tsx` (< 165 lignes)
+### 4.3 `src/features/nutrition/components/RecipeSubmenuAccordion.tsx` (< 165 lignes) — `[À CODER - UI]`
 - Affiche la ligne parente du plat composé (ex: *"Pâtes Bolognaise (1,5 part) — 810 kcal | 63P • 90G • 21L"*) avec un chevron animé (`motion`).
 - Au clic sur le plat, déplie en douceur (`AnimatePresence`) la liste de ses sous-ingrédients clonés (`meal_entry_items`) sur fond `#2C2C2E`.
 - Sur chaque sous-ingrédient (ex: *Riz cru*), l'utilisateur peut modifier directement le grammage (`inputMode="decimal"`) ou supprimer l'ingrédient (`deleteClonedIngredient`) : les macros de la sous-ligne, du plat parent et de la jauge de la journée se mettent à jour en temps réel !
 
-### 4.4 `src/features/nutrition/components/AddNutritionItemDrawer.tsx` (< 190 lignes)
+### 4.4 `src/features/nutrition/components/AddNutritionItemDrawer.tsx` (< 190 lignes) — `[À CODER - UI]`
 - Bottom Sheet `vaul` avec 3 onglets :
   1. **Aliments** : Recherche instantanée dans `foods`. Au clic sur un aliment, champ de quantité (`g` si `'100g'`, `unité` si `'unit'`, ou sélecteur **`[ g | unité ]`** si `'both'`).
   2. **Mes Plats** : Liste des recettes partagées (`recipes`). Permet de saisir le nombre de parts en décimal (`inputMode="decimal"`, défaut `1`, boutons rapides `0.5`, `1`, `1.5`, `2`) puis clic sur **"Ajouter"** → appelle `addRecipeMealEntryWithClonedItems`.
   3. **Quick Add** : Formulaire libre (`Intitulé`, `Kcal`, et optionnellement `P`, `G`, `L`).
 
+### 4.5 Assemblage de la Page `src/app/(protected)/nutrition/page.tsx` — `[À CODER - UI]`
+- Navigation par date, carte `DailyMacroSummary`, et rendu ordonné des 5 `MealCard` selon `MEAL_CATEGORIES_ORDER`.
+
 ---
 
 ## 5. Checklist de Validation (Definition of Done — Phase 5)
 
+- [x] **Moteur mathématique nutritionnel :** `nutrition.math.ts` implémenté et vérifié `[OK]` (macros au gramme, portions décimales, agrégation).
+- [x] **Services Supabase Nutrition :** `entries.service.ts` (189 l., gestion des repas, Quick Add, copie RPC couple) et `recipes.service.ts` (145 l., clonage recette décimale, trigger d'override local) implémentés et vérifiés `[OK]`.
+- [ ] **Composants UI Nutrition `[À CODER - UI]` :** Développer `DailyMacroSummary.tsx`, `MealCard.tsx`, `RecipeSubmenuAccordion.tsx`, `AddNutritionItemDrawer.tsx` et assembler la page `src/app/(protected)/nutrition/page.tsx`.
 - [ ] **Test Plat Composé avec Portions Décimales & Override :** Ajouter `1,5 part` de *"Pâtes Bolo"* au déjeuner → vérifier que tous les sous-ingrédients sont multipliés par `1,5` → changer le riz dans le sous-menu → vérifier que le total du déjeuner se met à jour sans impacter la recette du catalogue.
 - [ ] **Test Édition & Suppression d'Aliment Simple :** Ajouter `100g` de riz simple, modifier la ligne à `130g`, puis supprimer une ligne en doublon.
 - [ ] **Test Aliment `'both'` (Banane) :** Ajouter une banane en mode `1 unité` (`120g`) puis une autre en mode `85g`.

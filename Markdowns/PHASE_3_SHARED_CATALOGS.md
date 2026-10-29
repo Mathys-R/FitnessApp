@@ -31,8 +31,8 @@
 
 ## 3. Fichiers de Code de la Phase 3 (Déjà Extraits dans le Projet)
 
-- **Seed initial (40 exercices sur les 10 groupes musculaires) :** [`public/data/exercises_seed.json`](../public/data/exercises_seed.json)
-- **Couche 1 — Moteur Mathématique Pur :** [`src/lib/math/nutrition.math.ts`](../src/lib/math/nutrition.math.ts)
+- **Seed initial (40 exercices sur les 10 groupes musculaires) :** [`public/data/exercises_seed.json`](../public/data/exercises_seed.json) `[OK]` (présent et prêt pour le peuplement initial)
+- **Couche 1 — Moteur Mathématique Pur :** [`src/lib/math/nutrition.math.ts`](../src/lib/math/nutrition.math.ts) `[OK]` (134 lignes, fonctions TypeScript pures)
   - `roundMacro(val)` & `roundQuantity(val)`
   - `computeFoodMultiplier(servingType, unitWeightG, quantityValue, loggedUnit)`
   - `calculateFoodMacros(food, quantityValue, loggedUnit)`
@@ -40,35 +40,35 @@
   - `scaleQuantityByPortions(baseSingleServingQuantity, portionsMultiplier)`
   - `sumMacroValues(items)`
 - **Couche 2 — Services Supabase Scindés (`< 200 lignes`) :**
-  1. **Exercices :** [`src/features/catalogs/services/exercises.service.ts`](../src/features/catalogs/services/exercises.service.ts)
+  1. **Exercices :** [`src/features/catalogs/services/exercises.service.ts`](../src/features/catalogs/services/exercises.service.ts) `[OK]` (63 lignes)
      - `getActiveExercises()` (injecte automatiquement `exercises_seed.json` si la table est vide)
      - `createOrUpdateExercise(payload)`
      - `archiveExercise(exerciseId)`
-  2. **Aliments & Recettes :** [`src/features/catalogs/services/nutrition.service.ts`](../src/features/catalogs/services/nutrition.service.ts)
+  2. **Aliments & Recettes :** [`src/features/catalogs/services/nutrition.service.ts`](../src/features/catalogs/services/nutrition.service.ts) `[OK]` (136 lignes)
      - `getActiveFoods()`, `createOrUpdateFood(payload)`, `archiveFood(foodId)`
      - `getActiveRecipes()`, `saveRecipeSingleServing(params)`, `archiveRecipe(recipeId)`
 
 ---
 
-## 4. Couche 3 — Spécification des Composants UI (`< 200 lignes`)
+## 4. Couche 3 — Spécification des Composants UI (`< 200 lignes`) — `[À CODER - UI]`
 
-### 4.1 `src/features/catalogs/components/MuscleFilterChips.tsx` (< 80 lignes)
+### 4.1 `src/features/catalogs/components/MuscleFilterChips.tsx` (< 80 lignes) — `[À CODER - UI]`
 - Barre horizontale scrollable sans barre de défilement (`overflow-x-auto no-scrollbar flex gap-2`) affichant `Tous` suivi des **10 groupes musculaires** (`Pecs`, `Dos`, `Épaules`, `Biceps`, `Triceps`, `Quadriceps`, `Ischios`, `Fessiers`, `Mollets`, `Abdos`).
 - Bulle active en `#0A84FF` texte blanc, bulles inactives en `#1C1C1E` texte `#8E8E93`, hauteur minimale `44px`.
 
-### 4.2 `src/features/catalogs/components/ExerciseList.tsx` & `ExerciseFormDrawer.tsx` (< 180 lignes chacun)
+### 4.2 `src/features/catalogs/components/ExerciseList.tsx` & `ExerciseFormDrawer.tsx` (< 180 lignes chacun) — `[À CODER - UI]`
 - Recherche instantanée par texte combinée au filtre `MuscleFilterChips`.
 - Chaque carte d'exercice affiche le nom, le badge du muscle principal (`#0A84FF`), les badges des muscles secondaires (`#3A3A3C`), et un aperçu repliable du `setup_guide`.
 - `ExerciseFormDrawer.tsx` : Permet d'ajouter ou modifier un exercice en choisissant 1 muscle principal parmi les 10, 0 à 3 muscles secondaires, et le guide d'exécution.
 
-### 4.3 `src/features/catalogs/components/FoodList.tsx` & `FoodFormDrawer.tsx` (< 180 lignes chacun)
+### 4.3 `src/features/catalogs/components/FoodList.tsx` & `FoodFormDrawer.tsx` (< 180 lignes chacun) — `[À CODER - UI]`
 - Dans `FoodFormDrawer.tsx` :
   - Sélecteur à 3 options pour `serving_type` :
     1. **`Par 100g`** (ex: Riz, Pain) → affiche les 4 champs macros pour `100g`.
     2. **`Par Unité`** (ex: Œuf) → affiche les 4 champs macros pour `1 unité` (et un champ optionnel *Poids d'1 unité (g)*).
     3. **`Les deux (100g + Unité)`** (ex: Banane) → affiche les 4 champs macros pour `100g` **ET** rend obligatoire le champ *Poids moyen d'1 unité en grammes (`unit_weight_g`, ex: 120g)*.
 
-### 4.4 `src/features/catalogs/components/RecipeList.tsx` & `RecipeBuilderDrawer.tsx` (< 195 lignes chacun)
+### 4.4 `src/features/catalogs/components/RecipeList.tsx` & `RecipeBuilderDrawer.tsx` (< 195 lignes chacun) — `[À CODER - UI]`
 - `RecipeBuilderDrawer.tsx` :
   - Nom du plat (ex: *"Pâtes Bolognaise Maison"*).
   - Sélecteur d'ingrédients depuis `foods` :
@@ -77,10 +77,18 @@
     - Si l'aliment est `'both'` (ex: Banane), affiche un mini-switch **`[ g | u ]`** à côté du champ de quantité !
   - **Bandeau "Mode Meal Prep (Diviseur de parts)" :** Champ numérique *"Quantités saisies pour combien de parts ?"* (défaut = `1`). Si l'utilisateur met `4`, l'aperçu en direct affiche : *"Enregistré pour 1 part : 100g Pâtes, 150g Bœuf — 540 kcal / part"* avec animation `<NumberFlow />`. Lors d'une modification d'un plat déjà enregistré, le formulaire s'ouvre directement avec les quantités d'1 portion (`parts = 1`).
 
+### 4.5 Assemblage de la Page `src/app/(protected)/catalogs/page.tsx` — `[À CODER - UI]`
+- Segmented Control à 3 onglets iOS (`Exercices` | `Aliments` | `Mes Plats`).
+- Intégration respective de `MuscleFilterChips` + `ExerciseList` (avec trigger `ExerciseFormDrawer`), `FoodList` (avec trigger `FoodFormDrawer`), et `RecipeList` (avec trigger `RecipeBuilderDrawer`).
+
 ---
 
 ## 5. Checklist de Validation (Definition of Done — Phase 3)
 
+- [x] **Seed d'exercices initial :** [`public/data/exercises_seed.json`](../public/data/exercises_seed.json) prêt et vérifié `[OK]` (40 exercices qualifiés sur les 10 groupes musculaires).
+- [x] **Moteur mathématique nutritionnel :** `nutrition.math.ts` implémenté et vérifié `[OK]` (règle de trois macros, tool Meal Prep de division, calcul portions décimales).
+- [x] **Services Supabase de catalogues :** `exercises.service.ts` (63 lignes) et `nutrition.service.ts` (136 lignes) implémentés et vérifiés `[OK]`.
+- [ ] **Composants UI Catalogues `[À CODER - UI]` :** Développer `MuscleFilterChips.tsx`, `ExerciseList.tsx`, `ExerciseFormDrawer.tsx`, `FoodList.tsx`, `FoodFormDrawer.tsx`, `RecipeList.tsx`, `RecipeBuilderDrawer.tsx`, et la page `src/app/(protected)/catalogs/page.tsx`.
 - [ ] Au premier chargement de l'onglet Catalogues, `exercises_seed.json` peuple automatiquement la base avec les exercices répartis sur les **10 groupes musculaires** (`Quadriceps`, `Ischios`, `Fessiers`, `Mollets` séparés).
 - [ ] Création d'un aliment en mode `'100g'` (Riz), d'un aliment en mode `'unit'` (Œuf), et d'un aliment en mode `'both'` (Banane : 89 kcal/100g, 1 unité = 120g) vérifiée.
 - [ ] Création d'un plat composé en saisissant les quantités pour `4 parts` → vérification en base que `recipe_ingredients` stocke bien les quantités divisées par 4 (pour **1 portion individuelle de référence**).

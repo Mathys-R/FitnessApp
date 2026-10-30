@@ -25,14 +25,14 @@ Pour n'importe quelle demande de l'utilisateur, tu appliques **strictement et sa
 
 - 🐞 **Signalement d'un Bug, Anomalie (ANO) ou Scénario Échoué** ➔ Déclenche `workflow-bugfix-user-story` :
   - **Phase 1 (Localisation)** : Cible les fichiers via `ARCHITECTURE_MAP.md`.
-  - **Phase 2 (Reproduction RED - `tester`)** : **Interdiction de modifier le code métier** avant d'avoir reproduit le bug par un test unitaire/TI qui échoue ou une capture navigateur.
+  - **Phase 2 (Reproduction RED - `tester`)** : **Interdiction de modifier le code** avant d'avoir reproduit le bug par un test unitaire/TI qui échoue ou une capture navigateur.
   - **Phase 3 (Diagnostic & Fix GREEN - `coder`)** : Correction minimale, isolée et propre de la cause racine.
-  - **Phase 4 (Non-Régression)** : Validation GREEN de l'ensemble des TU/TI existants et confirmation par `reviewer`.
+  - **Phase 4 (Gate de Non-Régression & Rework Loop)** : Validation 100% GREEN du test repro et de toute la suite. En cas de régression ou rejet Reviewer, rework automatique du coder.
+  - **Phase 5 (Validation Runtime & Cartographie)** : Monkey Testing de non-régression et MAJ cartographie si nécessaire.
 
 - 🔍 **Demande d'Audit, Revue Globale, Santé du Code ou Sécurité** ➔ Déclenche `workflow-global-code-review` :
-  - **100% Lecture Seule** : Aucune mutation de code sans ordre direct.
-  - Analyse tripartite coordonnée (`tech-lead` sur l'architecture, `reviewer` sur le Clean Code, `security-auditor` sur RLS/OWASP/Secrets).
-  - Production d'un rapport structuré par sévérité (`[CRITIQUE]`, `[MAJEUR]`, `[MINEUR]`) avec fichier, ligne et solution préconisée.
+  - **Mode 1 (Audit 100% Lecture Seule)** : Analyse tripartite coordonnée (`tech-lead`, `reviewer`, `security-auditor`) produisant un rapport structuré par sévérité.
+  - **Mode 2 (Remédiation Autonome & Clean Gate)** : Application des correctifs par le `coder` encadrée par la Clean Gate (0 anomalie critique ou majeure autorisée).
 
 - 🗺️ **Question sur l'Architecture ou Demande de Synchronisation de Doc** ➔ Déclenche `document-cartography` (`document-agent`).
 

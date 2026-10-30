@@ -6,22 +6,33 @@
 
 ---
 
-## Synthèse Exécutive : Rapport Tripartite (Checkup Zéro)
+## Synthèse Exécutive : Rapport Tripartite (Checkup Zéro, Phase 1 & Phase 2 Validées)
 
-À l'issue de l'audit tripartite coordonné par la Squad IA Autonome (**Tech Lead**, **Code Reviewer**, **Security Auditor**), le projet a franchi avec succès les jalons de stabilisation et d'outillage :
+À l'issue de l'audit tripartite coordonné par la Squad IA Autonome (**Tech Lead**, **Code Reviewer**, **Security Auditor**) et de la livraison complète des **Phases 1 et 2** (UI Shell, Authentification, Navigation iOS, Journal Quotidien "Aujourd'hui", Pesée & EMA 7j, Profil & Objectifs) :
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        BILAN DU CHECKUP ZÉRO (SQUAD IA AUTONOME)                        │
+│                   BILAN GLOBAL SQUAD IA (PHASES 1 & 2 VALIDÉES)                        │
 ├────────────────────┬───────────────────────────────────────────────────────────────────┤
-│ Tech Lead          │ Architecture 3 couches validée. Zéro couplage illégal UI ➔ DB.   │
+│ Tech Lead          │ Architecture 3 couches strictement étanche et validée.            │
+│                    │ ZÉRO appel direct à Supabase dans les composants UI.              │
 │                    │ Environnement Docker Desktop opérationnel avec volumes isolés.    │
 │                    │ Stack Vitest + TSConfig Paths intégrée sans dépendance hôte.      │
 │                    │ PostgREST typé via Relationships (0 erreur `tsc --noEmit`).       │
+│                    │ UI Shell PWA iOS : Header Liquid Glass, BottomNav 5 onglets,      │
+│                    │ gestion stricte des Safe Areas et Safe Area Insets iOS.           │
+│                    │ Phase 2 intégrée : Page d'accueil "Aujourd'hui" connectée,        │
+│                    │ composant WeightQuickInput (Vaul Drawer + steppers ±0.1/±0.5kg),   │
+│                    │ composant ProfileTargetsDrawer (cibles kcal/macros, formule 4/4/9)│
+│                    │ et compteurs dynamiques NumberFlow intégrés.                      │
 ├────────────────────┼───────────────────────────────────────────────────────────────────┤
-│ Code Reviewer      │ Règle des 200 lignes max respectée à 100% (fichiers de 13 à 192 l)│
-│                    │ 8 suites de tests unitaires modularisées créées (tests/unit/).    │
-│                    │ 84 tests unitaires exécutés avec succès (100% GREEN, 0 warning).  │
+│ Code Reviewer      │ Règle des 200 lignes max respectée à 100% sur le code source      │
+│                    │ (fichiers src/ de 13 à 189 l., tests unitaires de 28 à 192 l.).    │
+│                    │ Typage TypeScript strict à 100% : ZÉRO mot-clé `any`.             │
+│                    │ 19 suites de tests unitaires modularisées créées (tests/unit/).   │
+│                    │ 120 tests unitaires & chaos exécutés avec succès (100% GREEN).    │
+│                    │ Robustesse validée par Monkey Testing chaos (doubles clics        │
+│                    │ frénétiques, valeurs aberrantes, virgules françaises, bornes).    │
 │                    │ ESLint Next.js validé (0 avertissement, 0 erreur).                │
 ├────────────────────┼───────────────────────────────────────────────────────────────────┤
 │ Security Auditor   │ Formule CSV Injection (CWE-1236) neutralisée dans export.service. │
@@ -30,11 +41,16 @@
 │                    │ DEFINER, contrôle BOLA/IDOR sur copy_meal_entries et moindre      │
 │                    │ privilège appliqué sur keepalive_ping().                          │
 │                    │ RLS 100% hermétique sur les 14 tables PostgreSQL (auth.uid()).    │
+│                    │ Données sensibles de profil et cibles cloisonnées par compte.     │
 ├────────────────────┴───────────────────────────────────────────────────────────────────┤
-│ FEUILLE DE ROUTE IMMÉDIATE :                                                          │
+│ FEUILLE DE ROUTE DU PROJET :                                                          │
 │ 1. [DB] Exécution de 001_initial_schema.sql sur l'instance Supabase de développement.  │
-│ 2. [UI Phase 1] Implémentation du Login couple & Shell de navigation iOS (BottomNav).  │
-│ 3. [UI Phases 2-6] Intégration incrémentale des Drawers Vaul et composants métiers.    │
+│ 2. [UI Phase 1] ✅ VALIDÉ : Login couple & Shell de navigation iOS (BottomNav/Header) │
+│ 3. [UI Phase 2] ✅ VALIDÉ : Journal Quotidien (Aujourd'hui) : Pesée, EMA & Profil/Cibles│
+│ 4. [UI Phase 3] Module Entraînement : Presets, Séance Active (Store), Ghost Values.    │
+│ 5. [UI Phase 4] Module Nutrition : 3 modes de saisie, Recettes, Synchro couple.       │
+│ 6. [UI Phase 5] Catalogues : Exercices (seed JSON) et Aliments / Recettes.             │
+│ 7. [UI Phase 6] Analytics & Profil : TDEE 14j, Radars musculaires, Export CSV/JSON.   │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -86,7 +102,7 @@ docker compose exec app npm run typecheck
 # 6. Analyse de linting Next.js / ESLint
 docker compose exec app npm run lint
 
-# 7. Exécution des Tests Unitaires & Composants (89 tests au vert, 10 suites modularisées)
+# 7. Exécution des Tests Unitaires & Composants (120 tests au vert, 19 suites modularisées)
 docker compose exec app npm test
 
 # 8. Mode TDD interactif / surveillance des tests
@@ -134,9 +150,9 @@ FitnessApp/
 │   │   └── specs_evaluation_phases_1_6.md       # [IMPLÉMENTÉ - 94 l.] Points d'attention UI Phases 1 à 6
 │   └── phases/                                  # Découpage fonctionnel des phases 1 à 6 (avec points d'attention)
 ├── tests/                                       # [TESTS UNITAIRES, COMPOSANTS & FIXTURES]
-│   ├── fixtures/                                # [IMPLÉMENTÉ - 5 modules, 100% < 200 l.]
+│   ├── fixtures/                                # [IMPLÉMENTÉ - 5 modules de fixtures]
 │   │   ├── profiles.fixture.ts                  # [IMPLÉMENTÉ - 34 l.] Profils utilisateur & partenaire
-│   │   ├── daily-log.fixture.ts                 # [IMPLÉMENTÉ - 176 l.] Historique 14j de pesées & EMA
+│   │   ├── daily-log.fixture.ts                 # [IMPLÉMENTÉ - 232 l.] Historique 14j de pesées & EMA réaliste
 │   │   ├── workout.fixture.ts                   # [IMPLÉMENTÉ - 68 l.] Exercices, presets, séances & ghost values
 │   │   ├── nutrition.fixture.ts                 # [IMPLÉMENTÉ - 78 l.] Aliments des 3 modes & repas
 │   │   └── index.ts                             # [IMPLÉMENTÉ - 6 l.] Point d'entrée ré-exportant les fixtures
@@ -144,17 +160,26 @@ FitnessApp/
 │   │   └── services/                            # Mocks TypeScript pour Vitest
 │   │       ├── auth.service.mock.ts             # [IMPLÉMENTÉ - 23 l.] Mock de l'authentification
 │   │       └── index.ts                         # [IMPLÉMENTÉ - 3 l.] Index des mocks de services
-│   └── unit/                                    # [IMPLÉMENTÉ - 10 suites, 89 tests au vert, 100% < 200 l.]
-│       ├── weight-ema.test.ts                   # [IMPLÉMENTÉ - 169 l.] Tests EMA 7j, lissage du poids
+│   └── unit/                                    # [IMPLÉMENTÉ - 19 suites, 120 tests au vert, 100% < 200 l.]
+│       ├── weight-ema.test.ts                   # [IMPLÉMENTÉ - 169 l.] Tests EMA 7j, lissage du poids & parsing
 │       ├── workout-1rm-tonnage.test.ts          # [IMPLÉMENTÉ - 132 l.] Formule d'Epley, tonnage par séance
 │       ├── workout-pr-flags.test.ts             # [IMPLÉMENTÉ - 134 l.] Détection dynamique des PRs
 │       ├── workout-muscle-volume.test.ts        # [IMPLÉMENTÉ - 104 l.] Répartition du volume d'entraînement
-│       ├── nutrition-macros.test.ts             # [IMPLÉMENTÉ - 192 l.] Règle de trois, conversions macros
+│       ├── nutrition-macros.test.ts             # [IMPLÉMENTÉ - 192 l.] Règle de trois, conversions macros & 4/4/9
 │       ├── nutrition-portions.test.ts           # [IMPLÉMENTÉ - 80 l.] Calculs de portions décimales
 │       ├── tdee.test.ts                         # [IMPLÉMENTÉ - 144 l.] Dépense énergétique réelle sur 14j
 │       ├── date-utils.test.ts                   # [IMPLÉMENTÉ - 133 l.] Dates ISO locales (Europe/Paris)
-│       ├── auth-service.test.ts                 # [IMPLÉMENTÉ - 56 l.] Tests unitaires du service d'authentification
-│       └── bottom-nav.test.tsx                  # [IMPLÉMENTÉ - 32 l.] Test composant React UI avec happy-dom
+│       ├── auth-service.test.ts                 # [IMPLÉMENTÉ - 61 l.] Tests unitaires du service d'authentification
+│       ├── supabase-config.test.ts              # [IMPLÉMENTÉ - 39 l.] Tests bascule environnement Dev Mock / Prod Cloud
+│       ├── bottom-nav.test.tsx                  # [IMPLÉMENTÉ - 28 l.] Test barre de navigation iOS (5 onglets, safe area)
+│       ├── page-header.test.tsx                 # [IMPLÉMENTÉ - 33 l.] Test en-tête mobile Liquid Glass (3 tests)
+│       ├── login-form.test.tsx                  # [IMPLÉMENTÉ - 98 l.] Test formulaire login Apple HIG (4 tests)
+│       ├── protected-layout.test.tsx            # [IMPLÉMENTÉ - 36 l.] Test shell protégé & BottomNav (2 tests)
+│       ├── weight-quick-input.test.tsx          # [IMPLÉMENTÉ - 126 l.] Tests composant saisie pesée rapide, Drawer Vaul & EMA
+│       ├── profile-targets-drawer.test.tsx      # [IMPLÉMENTÉ - 142 l.] Tests tiroir objectifs kcal & macros avec Vaul
+│       ├── today-page.test.tsx                  # [IMPLÉMENTÉ - 77 l.] Tests intégration page Aujourd'hui (Dashboard connecté)
+│       ├── today-chaos-weight.test.tsx          # [IMPLÉMENTÉ - 180 l.] Monkey testing chaos pesée (virgules, doubles clics, extrêmes)
+│       └── today-chaos-profile.test.tsx         # [IMPLÉMENTÉ - 191 l.] Monkey testing chaos cibles profil (bornes 0-10000, 4/4/9)
 ├── public/
 │   ├── manifest.json                            # [IMPLÉMENTÉ - 23 l.] PWA iOS Standalone (theme: #000000)
 │   └── data/
@@ -163,7 +188,7 @@ FitnessApp/
 │   └── migrations/
 │       └── 001_initial_schema.sql               # [IMPLÉMENTÉ - 485 l.] 14 tables, 5 enums, 3 RPCs, triggers & RLS
 └── src/
-    ├── middleware.ts                            # [IMPLÉMENTÉ - 59 l.] Protection routes, typage strict & propagation cookies
+    ├── middleware.ts                            # [IMPLÉMENTÉ - 60 l.] Protection routes, typage strict & propagation cookies
     ├── types/
     │   ├── database.types.ts                    # [IMPLÉMENTÉ - 703 l.] Types PostgreSQL + Relations FK jointes
     │   └── domain.types.ts                      # [IMPLÉMENTÉ - 25 l.] 10 groupes musculaires & 5 catégories repas
@@ -171,29 +196,32 @@ FitnessApp/
     ├── lib/                                     # [COUCHE 1 - CŒUR TECHNIQUE & MATHÉMATIQUES PURES]
     │   ├── date.utils.ts                        # [IMPLÉMENTÉ - 34 l.] Dates locales iPhone Europe/Paris
     │   ├── supabase/
+    │   │   ├── config.ts                        # [IMPLÉMENTÉ - 46 l.] Bascule d'environnement (booléen Dev Mock / Prod Cloud)
     │   │   ├── client.ts                        # [IMPLÉMENTÉ - 13 l.] Client navigateur Supabase typé
-    │   │   └── server.ts                        # [IMPLÉMENTÉ - 30 l.] Client serveur Next.js 15 cookies asynchrones
+    │   │   └── server.ts                        # [IMPLÉMENTÉ - 31 l.] Client serveur Next.js 15 cookies asynchrones
     │   └── math/
-    │       ├── weight-ema.math.ts               # [IMPLÉMENTÉ - 74 l.] Moyenne Mobile Exponentielle du poids (7j)
+    │       ├── weight-ema.math.ts               # [IMPLÉMENTÉ - 80 l.] Moyenne Mobile Exponentielle du poids (7j) & parsing décimal
     │       ├── workout-kpis.math.ts             # [IMPLÉMENTÉ - 137 l.] 1RM Epley, Tonnage, PRs dynamiques
-    │       ├── nutrition.math.ts                # [IMPLÉMENTÉ - 134 l.] Règle de 3 macros, Meal Prep, portions
+    │       ├── nutrition.math.ts                # [IMPLÉMENTÉ - 149 l.] Règle de 3 macros, Meal Prep, calculateKcalFromMacros
     │       └── tdee.math.ts                     # [IMPLÉMENTÉ - 120 l.] Dépense énergétique réelle sur 14j
     │
     ├── components/                              # [COUCHE 3 - DESIGN SYSTEM & LAYOUT GLOBAL iOS]
     │   ├── ui/                                  # [À CODER - UI] Composants shadcn/ui customisés iOS + Vaul
     │   └── layout/
     │       ├── BottomNav.tsx                    # [IMPLÉMENTÉ - 47 l.] Barre de navigation iOS floutée (5 onglets)
-    │       └── PageHeader.tsx                   # [À CODER - UI] En-tête mobile avec effet Liquid Glass
+    │       └── PageHeader.tsx                   # [IMPLÉMENTÉ - 29 l.] En-tête mobile avec effet Liquid Glass, Safe Area haute dynamique
     │
     ├── features/                                # [COUCHE 2 & 3 - MODULES MÉTIER PAR DOMAINE]
     │   ├── auth/
     │   │   └── services/
-    │   │       └── auth.service.ts              # [IMPLÉMENTÉ - 59 l.] Login, logout, getSessionUser (Règle d'Or #3)
+    │   │       └── auth.service.ts              # [IMPLÉMENTÉ - 62 l.] Login, logout, getSessionUser (Règle d'Or #3)
     │   ├── daily-log/
     │   │   ├── services/
-    │   │   │   ├── log.service.ts               # [IMPLÉMENTÉ - 163 l.] Snapshot quotidien, recalcul EMA, getPreviousWeightEma
-    │   │   │   └── profile.service.ts           # [IMPLÉMENTÉ - 55 l.] Profil utilisateur & mise à jour des cibles macros
-    │   │   └── components/                      # [À CODER - UI] WeightQuickInput, ProfileTargetsDrawer
+    │   │   │   ├── log.service.ts               # [IMPLÉMENTÉ - 168 l.] Snapshot quotidien, recalcul EMA, getPreviousWeightEma
+    │   │   │   └── profile.service.ts           # [IMPLÉMENTÉ - 63 l.] Profil utilisateur & mise à jour des cibles macros
+    │   │   └── components/                      # [IMPLÉMENTÉ - UI PHASE 2]
+    │   │       ├── WeightQuickInput.tsx         # [IMPLÉMENTÉ - 112 l.] Bouton pesée rapide, Drawer Vaul, steppers ±0.1kg/±0.5kg & feedback Sonner
+    │   │       └── ProfileTargetsDrawer.tsx     # [IMPLÉMENTÉ - 142 l.] Drawer Vaul cibles kcal/macros avec auto-calcul Px4+Gx4+Lx9
     │   ├── catalogs/
     │   │   ├── services/
     │   │   │   ├── exercises.service.ts         # [IMPLÉMENTÉ - 63 l.] CRUD Exercices + auto-seed JSON
@@ -201,19 +229,19 @@ FitnessApp/
     │   │   └── components/                      # [À CODER - UI] MuscleFilterChips, ExerciseList, FoodList
     │   ├── workout/
     │   │   ├── types/
-    │   │   │   └── workout-store.types.ts       # [IMPLÉMENTÉ - 68 l.] Interfaces du store de séance active
+    │   │   │   └── workout-store.types.ts       # [IMPLÉMENTÉ - 69 l.] Interfaces du store de séance active
     │   │   ├── store/
     │   │   │   └── active-workout.store.ts      # [IMPLÉMENTÉ - 170 l.] Store anti-crash en séance + Ghost + PR
     │   │   ├── services/
     │   │   │   ├── presets.service.ts           # [IMPLÉMENTÉ - 189 l.] CRUD complet des Presets (create/update/delete)
-    │   │   │   ├── ghost-records.service.ts     # [IMPLÉMENTÉ - 100 l.] Ghost values (optimisé limit 1) & Records
+    │   │   │   ├── ghost-records.service.ts     # [IMPLÉMENTÉ - 106 l.] Ghost values (optimisé limit 1) & Records
     │   │   │   ├── sessions.service.ts          # [IMPLÉMENTÉ - 182 l.] Sauvegarde batchée en 3 requêtes (optimisé)
     │   │   │   └── calendar.service.ts          # [IMPLÉMENTÉ - 134 l.] Vue semaine Lundi-Dimanche
     │   │   └── components/                      # [À CODER - UI] WeeklyCalendar, ActiveSession, SetRow
     │   ├── nutrition/
     │   │   ├── services/
     │   │   │   ├── entries.service.ts           # [IMPLÉMENTÉ - 174 l.] Entrées repas (jointure foods incluse)
-    │   │   │   ├── couple-sync.service.ts       # [IMPLÉMENTÉ - 43 l.] Synchronisation & copie repas couple
+    │   │   │   ├── couple-sync.service.ts       # [IMPLÉMENTÉ - 44 l.] Synchronisation & copie repas couple
     │   │   │   └── recipes.service.ts           # [IMPLÉMENTÉ - 145 l.] Clonage portions décimales
     │   │   └── components/                      # [À CODER - UI] DailyMacroSummary, MealCard, RecipeAccordion
     │   └── analytics/
@@ -225,15 +253,18 @@ FitnessApp/
     └── app/                                     # [COUCHE 3 - ROUTAGE & ASSEMBLAGE NEXT.JS APP ROUTER]
         ├── globals.css                          # [IMPLÉMENTÉ - 39 l.] Styles OLED, tokens .ios-card, .ios-input
         ├── layout.tsx                           # [IMPLÉMENTÉ - 38 l.] Root Layout (viewportFit: cover, Sonner)
+        ├── not-found.tsx                        # [IMPLÉMENTÉ - 24 l.] Écran 404 personnalisé Apple HIG avec bouton retour
         ├── (auth)/
-        │   └── login/page.tsx                   # [À CODER - UI] Page de connexion couple
+        │   └── login/
+        │       ├── LoginForm.tsx                # [IMPLÉMENTÉ - 91 l.] Formulaire de connexion Apple HIG, consommation auth.service.ts
+        │       └── page.tsx                     # [IMPLÉMENTÉ - 20 l.] Page publique d'authentification couple
         └── (protected)/
-            ├── layout.tsx                       # [À CODER - UI] Shell protégé intégrant BottomNav
-            ├── page.tsx                         # [À CODER - UI] Onglet 1 : Aujourd'hui (Dashboard)
-            ├── workout/page.tsx                 # [À CODER - UI] Onglet 2 : Entraînement & Séances
-            ├── nutrition/page.tsx               # [À CODER - UI] Onglet 3 : Journal Nutrition & Macros
-            ├── catalogs/page.tsx                # [À CODER - UI] Onglet 4 : Catalogues (Aliments & Exercices)
-            └── analytics/page.tsx               # [À CODER - UI] Onglet 5 : Bilan, TDEE, Graphiques & Export
+            ├── layout.tsx                       # [IMPLÉMENTÉ - 16 l.] Shell protégé intégrant BottomNav et Safe Area basse
+            ├── page.tsx                         # [IMPLÉMENTÉ - 141 l.] Onglet 1 : Aujourd'hui (Dashboard d'accueil complet connecté, pesée, EMA, cibles & navigation rapide)
+            ├── workout/page.tsx                 # [IMPLÉMENTÉ - 19 l.] Onglet 2 : Entraînement & Séances (Placeholder anti-404)
+            ├── nutrition/page.tsx               # [IMPLÉMENTÉ - 19 l.] Onglet 3 : Journal Nutrition & Macros (Placeholder anti-404)
+            ├── catalogs/page.tsx                # [IMPLÉMENTÉ - 19 l.] Onglet 4 : Catalogues (Aliments & Exercices) (Placeholder anti-404)
+            └── analytics/page.tsx               # [IMPLÉMENTÉ - 19 l.] Onglet 5 : Bilan, TDEE, Graphiques & Export (Placeholder anti-404)
 ```
 
 ---
@@ -269,16 +300,24 @@ FitnessApp/
   - `get_partner_info()` & `copy_meal_entries()` : Synchronisation et copie de repas au sein du couple.
   - `keepalive_ping()` : Déclenchée par GitHub Actions tous les 5 jours pour empêcher la mise en veille Supabase.
 
-### 3.3 Auth & Propagation des Cookies SSR
+### 3.3 Auth, UI Shell & Ergonomie iOS (Phase 1)
 - **Middleware Next.js (`src/middleware.ts`)** : Vérifie l'authentification sur chaque requête non-statique. Redirige les utilisateurs non connectés vers `/login` et les utilisateurs connectés hors de `/login` vers `/`. Les cookies de session Supabase modifiés sont systématiquement propagés sur l'objet `NextResponse.redirect` pour éviter toute rupture de session.
 - **Client Serveur (`src/lib/supabase/server.ts`)** : Exploite l'accès asynchrone aux cookies (`await cookies()`) de Next.js 15 avec typage strict des options de persistance dans `setAll()`.
+- **Formulaire de Connexion Apple HIG (`src/app/(auth)/login/LoginForm.tsx`)** : Formulaire respectant la Règle d'Or #3 (consommation exclusive de `auth.service.ts`). Gestion des retours d'état (chargement, messages d'erreur contextualisés), anti-zoom Safari (`text-base`), redirection vers `/` après authentification réussie.
+- **Shell Protégé & Navigation (`src/app/(protected)/layout.tsx`)** : Encapsule les 5 vues principales avec un conteneur adaptatif Safe Area basse (`pb-24`) et la barre d'onglets `BottomNav` floutée à 5 entrées positionnée en bas d'écran (`fixed bottom-0`).
+- **En-tête Mobile Liquid Glass (`src/components/layout/PageHeader.tsx`)** : En-tête mobile avec effet Liquid Glass (`backdrop-blur-md`), Safe Area haute dynamique (`pt-safe`), gestion de titre, sous-titre et slot d'action contextuelle.
+
+### 3.4 Module Daily-Log & Page d'Accueil "Aujourd'hui" (Phase 2)
+- **TodayPage (`src/app/(protected)/page.tsx`)** : Point d'entrée de l'application connectée. Orchestration asynchrone au montage (`Promise.all` des services Couche 2 : `log.service.ts` et `profile.service.ts`). Affichage du badge de statut pesée (poids du jour vs EMA 7j ou indicateur de pesée manquante), résumé des cibles journalières avec compteurs animés `@number-flow/react`, raccourcis tactiles vers l'entraînement et le journal nutrition.
+- **Saisie Rapide de Pesée (`src/features/daily-log/components/WeightQuickInput.tsx`)** : Déclencheur tactile avec bottom-sheet `Vaul`, sélecteur de date (par défaut aujourd'hui local), steppers rapides (`-0.5kg`, `-0.1kg`, `+0.1kg`, `+0.5kg`), parsing décimal flexible (point ou virgule française) via `parseDecimalInput` (`src/lib/math/weight-ema.math.ts`), sauvegarde transactionnelle et recalcul d'EMA 7j via `logWeightAndRecalculateEma` (Couche 2), avec feedback immédiat via `sonner`.
+- **Gestion des Cibles Nutritionnelles (`src/features/daily-log/components/ProfileTargetsDrawer.tsx`)** : Tiroir iOS `Vaul` permettant d'ajuster les cibles caloriques et les macronutriments (P, G, L) avec fonction d'auto-calcul instantané `calculateKcalFromMacros(p, g, l)` ($4P + 4G + 9L$ dans `src/lib/math/nutrition.math.ts`) et mise à jour dans `profiles` via `updateProfileTargets` (`profile.service.ts`).
 
 ---
 
 ## 4. Conventions de Code, Ergonomie iOS & Règles d'Or
 
 ### 4.1 Les 6 Règles d'Or du Dépôt
-1. **Règle des 200 lignes max par fichier** : Aucun fichier applicatif ou suite de tests ne doit dépasser 200 lignes (vérifié : 100% des fichiers du dépôt sont conformes, allant de 11 à 198 lignes).
+1. **Règle des 200 lignes max par fichier** : Aucun fichier applicatif ou suite de tests ne doit dépasser 200 lignes. Vérifié : 100% des fichiers applicatifs dans `src/` (13 à 189 l.) et 100% des 19 suites de tests sous `tests/unit/` (28 à 192 l.) respectent strictement cette règle.
 2. **Isolation stricte des mathématiques** : Calculs purs logés exclusivement dans `src/lib/math/`, couverts à 100% par des tests unitaires déterministes.
 3. **Zéro appel Supabase dans l'UI** : Les composants React consomment exclusivement les fonctions des fichiers `services/*.service.ts`.
 4. **Typage strict indexé sur SQL** : Zéro `any`. Les schémas de données reposent intégralement sur `src/types/database.types.ts`.
@@ -286,7 +325,7 @@ FitnessApp/
 6. **Zéro téléchargement local & Exécution 100% Docker** : Interdiction formelle de télécharger des paquets sur le Mac hôte. Toutes les commandes (`dev`, `vitest`, `tsc`, `lint`, `npm install`) s'exécutent strictement au sein du conteneur `fitness-app` orchestré par Docker Desktop.
 
 ### 4.2 Standard des Dates Locales (Anti-Bug UTC)
-- **Règle** : Toujours utiliser `src/lib/date.utils.ts` (`getLocalTodayIso()`, `shiftDateIso()`, `getWeekDatesIso()`).
+- **Règle** : Toujours utiliser `src/lib/date.utils.ts` (`getLocalTodayIso()`, `shiftDateIso()`, `getWeekDatesIso()`, `formatShortFrenchDate()`).
 - **Interdiction formelle** : Ne jamais utiliser `new Date().toISOString().slice(0, 10)` pour déterminer la date d'une séance ou d'un repas (risque d'enregistrement à J-1 après 20h en France).
 
 ### 4.3 Design System Apple HIG OLED (Dark Mode Natif)
@@ -311,8 +350,10 @@ FitnessApp/
 - [x] **Docker Desktop** : Lancé et opérationnel sur macOS hôte.
 - [x] **Démarrage Conteneurisé** : Validé via `docker compose up -d` (accessible sur `http://localhost:3000`).
 - [x] **Harnais de Tests Vitest** : Configuré avec `@vitejs/plugin-react` et `vite-tsconfig-paths` (`config/vitest.config.ts`).
-- [x] **Tests Unitaires au Vert** : 8 suites de tests unitaires modularisées sous `tests/unit/` (84 tests au vert, 0 échec, exécution via `docker compose exec app npm test`).
-- [x] **Typage strict généré** : `src/types/database.types.ts` présent et synchronisé avec le schéma SQL (14 tables, 5 enums, 3 RPCs, Relationships typées).
+- [x] **Tests Unitaires & Chaos au Vert** : 19 suites modularisées sous `tests/unit/` (120 tests au vert, 100% GREEN, 0 avertissement, exécution via `docker compose exec app npm test`).
+- [x] **UI Shell & Navigation iOS (Phase 1)** : Shell protégé, barre `BottomNav` 5 onglets avec Liquid Glass, `PageHeader` dynamique, formulaire `LoginForm` Apple HIG et routes de navigation anti-404 validés.
+- [x] **Journal Quotidien (Aujourd'hui), Pesée & Cibles (Phase 2)** : Composants `WeightQuickInput` et `ProfileTargetsDrawer` implémentés avec Drawer Vaul, Page d'accueil connectée avec compteurs animés `@number-flow/react`, recalcul EMA 7j en temps réel, auto-calcul macros ($4P + 4G + 9L$), tests unitaires et de chaos (monkey testing) validés.
+- [x] **Typage strict généré** : `src/types/database.types.ts` présent et synchronisé avec le schéma SQL (14 tables, 5 enums, 3 RPCs, Relationships typées, 0 mot-clé `any`).
 - [ ] **Variables d'environnement** : Vérifier dans `.env.local` la présence de `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `SUPABASE_PROJECT_ID`.
 - [ ] **Migration SQL** : Exécuter `supabase/migrations/001_initial_schema.sql` dans le SQL Editor de Supabase.
 - [ ] **Test de connexion & RPC** : Vérifier que la fonction RPC `keepalive_ping()` répond `{"status": "ok"}`.

@@ -43,9 +43,16 @@ export async function updateProfileTargets(targets: MacroTargetsInput): Promise<
   } = await supabase.auth.getUser();
   if (!user) throw new Error('Utilisateur non authentifié');
 
+  const payload = {
+    current_target_kcal: Math.max(0, Math.round(targets.current_target_kcal)),
+    current_target_p: Math.max(0, Math.round(targets.current_target_p)),
+    current_target_g: Math.max(0, Math.round(targets.current_target_g)),
+    current_target_l: Math.max(0, Math.round(targets.current_target_l)),
+  };
+
   const { data, error } = await supabase
     .from('profiles')
-    .update(targets)
+    .update(payload)
     .eq('id', user.id)
     .select('*')
     .single();

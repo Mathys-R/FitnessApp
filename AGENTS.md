@@ -17,11 +17,11 @@ Pour n'importe quelle demande de l'utilisateur, tu appliques **strictement et sa
 À chaque prompt utilisateur, agis en **Chef d'Orchestre**. Évalue d'abord la complexité du problème (matrice `skill-orchestrator`). Si la tâche est triviale (ex: coquille texte), résous-la directement. Si la tâche est structurante, active de toi-même le bon workflow et chaîne les subagents :
 
 - 🚀 **Nouvelle Fonctionnalité, Évolution ou Nouveau Composant** ➔ Déclenche `workflow-feature-implementation` :
-  - **Phase 1 (Cadrage)** : Lis `ARCHITECTURE_MAP.md`. Si le besoin est ambigu ou incomplet, **STOP** et pose les questions de clarification à l'utilisateur.
-  - **Phase 2 (Design & Plan)** : Délègue à `tech-lead` pour élaborer l'étude d'impact et l'artefact d'Implementation Plan soumis à validation.
-  - **Phase 3 (Développement)** : Délègue à `coder` pour l'implémentation incrémentale propre et typée (`tsc --noEmit` & `lint`).
-  - **Phase 4 (Vérification TU/TI & Chaos UI)** : Délègue à `tester` pour les tests unitaires et le lancement de `browser-monkey-testing` sur `http://localhost:3000` (nominal, doubles-clics, payloads extrêmes, 0 erreur console/réseau).
-  - **Phase 5 (Revue & Clôture)** : Revue par `reviewer`, audit par `security-auditor`, et mise à jour de `ARCHITECTURE_MAP.md` par `document-agent`.
+  - **Phase 1 (Cadrage & Lots étanches)** : Lis `ARCHITECTURE_MAP.md`. Délègue à `tech-lead` pour l'étude d'impact et le découpage en lots disjoints.
+  - **Phase 2 (Développement & Tests TDD)** : Délègue à `coder` (implémentation < 200 l.) et `tester` (tests unitaires `@vitest-environment happy-dom`).
+  - **Phase 3 (Double Audit Contradictoire)** : `reviewer` (audit technique 200 l., 0 any, 3 couches) + `tech-lead` (Challenger Métier vs `docs/phases/`).
+  - **Phase 4 (Gate & Rework Loop Autonome)** : Si rejet, renvoi automatique de `coder`/`tester` en correction. Zéro intervention humaine avant l'obtention d'un `[APPROVE]` unanime.
+  - **Phase 5 (Clôture & Cartographie)** : `tester` (Browser Monkey Testing iPhone `390x844`) et `document-agent` (MAJ `ARCHITECTURE_MAP.md` via Repomix).
 
 - 🐞 **Signalement d'un Bug, Anomalie (ANO) ou Scénario Échoué** ➔ Déclenche `workflow-bugfix-user-story` :
   - **Phase 1 (Localisation)** : Cible les fichiers via `ARCHITECTURE_MAP.md`.
@@ -59,7 +59,19 @@ Pour n'importe quelle demande de l'utilisateur, tu appliques **strictement et sa
 
 ---
 
-## 4. Loi du Conteneur Docker & Zéro Dépendance Locale
+## 4. Loi de la Gate & Rework Automatique (Feedback Loop Obligatoire)
+1. **Double Audit Indépendant** :
+   - `reviewer` : Audit technique (Clean code, 200 lignes max, zéro `any`, 3 couches, typage strict).
+   - `tech-lead` (Challenger Métier) : Audit fonctionnel contradictoire ligne par ligne par rapport aux spécifications de `docs/phases/`.
+2. **Boucle de Rework Autonome (Zero-Human-Delay)** :
+   - Tout `[REJECT]` ou réserve majeure renvoie **automatiquement** le `coder` et le `tester` en correction.
+   - La boucle tourne de façon autonome jusqu'à l'obtention d'un `[APPROVE]` unanime sur la Gate.
+3. **Clôture Post-Gate** :
+   - Le Browser Monkey Testing sur `http://localhost:3000` et la mise à jour d'`ARCHITECTURE_MAP.md` ne sont déclenchés qu'une fois la Gate franchie à 100%.
+
+---
+
+## 5. Loi du Conteneur Docker & Zéro Dépendance Locale
 1. **Prérequis Docker Desktop** :
    - **Docker Desktop** doit impérativement être lancé sur le Mac hôte.
    - Avant de lancer un test, un build ou un conteneur, vérifier la connectivité Docker (`docker ps` ou `docker info`).

@@ -32,7 +32,13 @@ export function computeSingleDayEma(
   currentWeightKg: number,
   previousEmaKg: number | null | undefined
 ): number {
-  if (previousEmaKg === null || previousEmaKg === undefined || previousEmaKg <= 0) {
+  if (!Number.isFinite(currentWeightKg) || currentWeightKg <= 0) return 0;
+  if (
+    previousEmaKg === null ||
+    previousEmaKg === undefined ||
+    !Number.isFinite(previousEmaKg) ||
+    previousEmaKg <= 0
+  ) {
     return roundToTwoDecimals(currentWeightKg);
   }
   const rawEma = currentWeightKg * EMA_ALPHA + previousEmaKg * (1 - EMA_ALPHA);
@@ -69,6 +75,6 @@ export function parseDecimalInput(raw: string): number | null {
   const normalized = raw.trim().replace(',', '.');
   if (!normalized) return null;
   const parsed = Number.parseFloat(normalized);
-  return Number.isFinite(parsed) && parsed > 0 ? roundToTwoDecimals(parsed) : null;
+  return Number.isFinite(parsed) && parsed > 0 && parsed < 1000 ? roundToTwoDecimals(parsed) : null;
 }
 

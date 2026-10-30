@@ -107,10 +107,16 @@ export async function toggleExcludeFromTdee(
   excludeFromTdee: boolean
 ): Promise<void> {
   const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('Utilisateur non authentifié');
+
   const { error } = await supabase
     .from('daily_logs')
     .update({ exclude_from_tdee: excludeFromTdee })
-    .eq('id', dailyLogId);
+    .eq('id', dailyLogId)
+    .eq('user_id', user.id);
 
   if (error) throw new Error(`Erreur mise à jour exclusion TDEE : ${error.message}`);
 }

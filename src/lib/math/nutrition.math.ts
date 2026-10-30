@@ -132,3 +132,18 @@ export function sumMacroValues(items: MacroValues[]): MacroValues {
   };
 }
 
+/**
+ * Calcule l'apport calorique théorique depuis les macronutriments en grammes :
+ * P x 4 + G x 4 + L x 9
+ */
+export function calculateKcalFromMacros(
+  proteinsGrams: number,
+  carbsGrams: number,
+  fatsGrams: number
+): number {
+  const p = Number.isFinite(proteinsGrams) ? Math.max(0, proteinsGrams) : 0;
+  const g = Number.isFinite(carbsGrams) ? Math.max(0, carbsGrams) : 0;
+  const l = Number.isFinite(fatsGrams) ? Math.max(0, fatsGrams) : 0;
+  return Math.round(p * 4 + g * 4 + l * 9);
+}
+

@@ -18,7 +18,7 @@ Pour n'importe quelle demande de l'utilisateur, tu appliques **strictement et sa
 
 - 🚀 **Nouvelle Fonctionnalité, Évolution ou Nouveau Composant** ➔ Déclenche `workflow-feature-implementation` :
   - **Phase 1 (Cadrage & Lots étanches)** : Lis `ARCHITECTURE_MAP.md`. Délègue à `tech-lead` pour l'étude d'impact et le découpage en lots disjoints.
-  - **Phase 2 (Développement & Tests TDD)** : Délègue à `coder` (implémentation < 200 l.) et `tester` (tests unitaires `@vitest-environment happy-dom`).
+  - **Phase 2 (Parallélisation Fan-Out : Multi-Coders & Tester)** : **Interdiction de sérialiser.** L'Orchestrateur lance simultanément dans le même message un `coder` par lot étanche (`coder-lot-1`, `coder-lot-2`, etc.) et le `tester` pour les fixtures et tests TDD. L'intégration de la page d'accueil/mère intervient en Fan-In.
   - **Phase 3 (Double Audit Contradictoire)** : `reviewer` (audit technique 200 l., 0 any, 3 couches) + `tech-lead` (Challenger Métier vs `docs/phases/`).
   - **Phase 4 (Gate & Rework Loop Autonome)** : Si rejet, renvoi automatique de `coder`/`tester` en correction. Zéro intervention humaine avant l'obtention d'un `[APPROVE]` unanime.
   - **Phase 5 (Clôture & Cartographie)** : `tester` (Browser Monkey Testing iPhone `390x844`) et `document-agent` (MAJ `ARCHITECTURE_MAP.md` via Repomix).
@@ -38,9 +38,10 @@ Pour n'importe quelle demande de l'utilisateur, tu appliques **strictement et sa
 
 ---
 
-## 3. Loi d'Isolation des Rôles & Contextes
+## 3. Loi d'Isolation des Rôles, Parallélisation & Contextes
 1. **Prévention du Biais de Confirmation** : Ne relis jamais ton propre code dans la même session. Délègue systématiquement les phases de conception (`tech-lead`), de codage (`coder`), de test (`tester`), de revue (`reviewer`), d'audit (`security-auditor`) et de documentation (`document-agent`) via des subagents (`invoke_subagent` ou contextes isolés).
-2. **Biais Proactif d'Outillage Repomix MCP** : Lors de toute invocation d'un sous-agent (`tech-lead`, `reviewer`, `document-agent`) pour une tâche d'analyse, de conception ou de cartographie, le prompt de mission émis par l'Orchestrateur DOIT obligatoirement ordonner l'utilisation de l'outil Repomix MCP (`pack_codebase`) pour garantir une extraction d'interfaces et de blast radius sans dispersion.
+2. **Loi du Fan-Out Parallèle (Multi-Coders & Tester Simultanés)** : Dès que l'Implementation Plan découpe le travail en lots étanches, l'Orchestrateur lance simultanément (dans le même turn) un `coder` par lot étanche et le `tester` en amont pour les fixtures et squelettes de tests. Interdiction formelle de regrouper tous les sous-lots chez un seul Coder séquentiel.
+3. **Biais Proactif d'Outillage Repomix MCP** : Lors de toute invocation d'un sous-agent (`tech-lead`, `reviewer`, `document-agent`) pour une tâche d'analyse, de conception ou de cartographie, le prompt de mission émis par l'Orchestrateur DOIT obligatoirement ordonner l'utilisation de l'outil Repomix MCP (`pack_codebase`) pour garantir une extraction d'interfaces et de blast radius sans dispersion.
 3. **Respect des 5 Règles d'Or de `FitnessApp`** :
    - **Règle 1 : 200 lignes max par fichier** (hors `database.types.ts`). Scinder systématiquement.
    - **Règle 2 : 3 Couches étanches** :

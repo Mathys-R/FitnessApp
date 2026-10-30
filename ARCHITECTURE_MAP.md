@@ -6,13 +6,13 @@
 
 ---
 
-## Synthèse Exécutive : Rapport Tripartite (Checkup Zéro, Phase 1 & Phase 2 Validées)
+## Synthèse Exécutive : Rapport Tripartite (Checkup Zéro, Phases 1, 2 & 3 Validées)
 
-À l'issue de l'audit tripartite coordonné par la Squad IA Autonome (**Tech Lead**, **Code Reviewer**, **Security Auditor**) et de la livraison complète des **Phases 1 et 2** (UI Shell, Authentification, Navigation iOS, Journal Quotidien "Aujourd'hui", Pesée & EMA 7j, Profil & Objectifs) :
+À l'issue de l'audit tripartite coordonné par la Squad IA Autonome (**Tech Lead**, **Code Reviewer**, **Security Auditor**) et de la livraison complète des **Phases 1, 2 et 3** (UI Shell, Authentification, Navigation iOS, Journal Quotidien "Aujourd'hui", Pesée & EMA 7j, Profil & Objectifs, Catalogues Partagés : Exercices avec auto-seed et 10 groupes musculaires, Aliments 3 modes 100g/unit/both, Recettes avec diviseur Meal Prep, calcul dynamique des portions et chaos testing) :
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                   BILAN GLOBAL SQUAD IA (PHASES 1 & 2 VALIDÉES)                        │
+│                   BILAN GLOBAL SQUAD IA (PHASES 1, 2 & 3 VALIDÉES)                     │
 ├────────────────────┬───────────────────────────────────────────────────────────────────┤
 │ Tech Lead          │ Architecture 3 couches strictement étanche et validée.            │
 │                    │ ZÉRO appel direct à Supabase dans les composants UI.              │
@@ -25,12 +25,16 @@
 │                    │ composant WeightQuickInput (Vaul Drawer + steppers ±0.1/±0.5kg),   │
 │                    │ composant ProfileTargetsDrawer (cibles kcal/macros, formule 4/4/9)│
 │                    │ et compteurs dynamiques NumberFlow intégrés.                      │
+│                    │ Phase 3 intégrée : Catalogues Partagés (Exercices avec auto-seed  │
+│                    │ 40 mouvements et filtrage 10 groupes musculaires, Aliments        │
+│                    │ 3 modes de mesure 100g/unit/both avec badge visuel, Recettes      │
+│                    │ Meal Prep avec calcul dynamique ramené à 1 portion de référence). │
 ├────────────────────┼───────────────────────────────────────────────────────────────────┤
 │ Code Reviewer      │ Règle des 200 lignes max respectée à 100% sur le code source      │
-│                    │ (fichiers src/ de 13 à 189 l., tests unitaires de 28 à 192 l.).    │
+│                    │ (fichiers src/ de 13 à 189 l., tests unitaires de 26 à 192 l.).    │
 │                    │ Typage TypeScript strict à 100% : ZÉRO mot-clé `any`.             │
-│                    │ 20 suites de tests unitaires modularisées créées (tests/unit/).   │
-│                    │ 122 tests unitaires & chaos exécutés avec succès (100% GREEN).    │
+│                    │ 25 suites de tests unitaires modularisées créées (tests/unit/).   │
+│                    │ 148 tests unitaires & chaos exécutés avec succès (100% GREEN).    │
 │                    │ Robustesse validée par Monkey Testing chaos (doubles clics        │
 │                    │ frénétiques, valeurs aberrantes, virgules françaises, bornes).    │
 │                    │ ESLint Next.js validé (0 avertissement, 0 erreur).                │
@@ -42,14 +46,18 @@
 │                    │ privilège appliqué sur keepalive_ping().                          │
 │                    │ RLS 100% hermétique sur les 14 tables PostgreSQL (auth.uid()).    │
 │                    │ Données sensibles de profil et cibles cloisonnées par compte.     │
+│                    │ Soft delete / archivage doux (is_archived) préservant l'intégrité  │
+│                    │ référentielle des séances et repas passés.                        │
 ├────────────────────┴───────────────────────────────────────────────────────────────────┤
 │ FEUILLE DE ROUTE DU PROJET :                                                          │
 │ 1. [DB] Exécution de 001_initial_schema.sql sur l'instance Supabase de développement.  │
 │ 2. [UI Phase 1] ✅ VALIDÉ : Login couple & Shell de navigation iOS (BottomNav/Header) │
 │ 3. [UI Phase 2] ✅ VALIDÉ : Journal Quotidien (Aujourd'hui) : Pesée, EMA & Profil/Cibles│
-│ 4. [UI Phase 3] Module Entraînement : Presets, Séance Active (Store), Ghost Values.    │
-│ 5. [UI Phase 4] Module Nutrition : 3 modes de saisie, Recettes, Synchro couple.       │
-│ 6. [UI Phase 5] Catalogues : Exercices (seed JSON) et Aliments / Recettes.             │
+│ 4. [UI Phase 3] ✅ VALIDÉ : Catalogues Partagés : Exercices (auto-seed JSON, 10 groupes│
+│    musculaires), Aliments (3 modes de mesure) & Plats Composés (Meal Prep 1 portion).  │
+│ 5. [UI Phase 4] Module Entraînement : Presets, Séance Active (Store anti-crash),      │
+│    Ghost Values, Records.                                                             │
+│ 6. [UI Phase 5] Module Nutrition : 3 modes de saisie, Recettes, Synchro couple.       │
 │ 7. [UI Phase 6] Analytics & Profil : TDEE 14j, Radars musculaires, Export CSV/JSON.   │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -102,7 +110,7 @@ docker compose exec app npm run typecheck
 # 6. Analyse de linting Next.js / ESLint
 docker compose exec app npm run lint
 
-# 7. Exécution des Tests Unitaires & Composants (122 tests au vert, 20 suites modularisées)
+# 7. Exécution des Tests Unitaires & Composants (148 tests au vert, 25 suites modularisées)
 docker compose exec app npm test
 
 # 8. Mode TDD interactif / surveillance des tests
@@ -150,17 +158,18 @@ FitnessApp/
 │   │   └── specs_evaluation_phases_1_6.md       # [IMPLÉMENTÉ - 94 l.] Points d'attention UI Phases 1 à 6
 │   └── phases/                                  # Découpage fonctionnel des phases 1 à 6 (avec points d'attention)
 ├── tests/                                       # [TESTS UNITAIRES, COMPOSANTS & FIXTURES]
-│   ├── fixtures/                                # [IMPLÉMENTÉ - 5 modules de fixtures]
+│   ├── fixtures/                                # [IMPLÉMENTÉ - 6 modules de fixtures]
 │   │   ├── profiles.fixture.ts                  # [IMPLÉMENTÉ - 34 l.] Profils utilisateur & partenaire
 │   │   ├── daily-log.fixture.ts                 # [IMPLÉMENTÉ - 232 l.] Historique 14j de pesées & EMA réaliste
 │   │   ├── workout.fixture.ts                   # [IMPLÉMENTÉ - 68 l.] Exercices, presets, séances & ghost values
 │   │   ├── nutrition.fixture.ts                 # [IMPLÉMENTÉ - 78 l.] Aliments des 3 modes & repas
-│   │   └── index.ts                             # [IMPLÉMENTÉ - 6 l.] Point d'entrée ré-exportant les fixtures
+│   │   ├── catalogs.fixture.ts                  # [IMPLÉMENTÉ - 52 l.] Fixtures exercices, aliments 3 modes & recettes meal prep
+│   │   └── index.ts                             # [IMPLÉMENTÉ - 7 l.] Point d'entrée ré-exportant les fixtures
 │   ├── mocks/                                   # [IMPLÉMENTÉ] Bouchons des services métier Couche 2
 │   │   └── services/                            # Mocks TypeScript pour Vitest
 │   │       ├── auth.service.mock.ts             # [IMPLÉMENTÉ - 23 l.] Mock de l'authentification
 │   │       └── index.ts                         # [IMPLÉMENTÉ - 3 l.] Index des mocks de services
-│   └── unit/                                    # [IMPLÉMENTÉ - 19 suites, 120 tests au vert, 100% < 200 l.]
+│   └── unit/                                    # [IMPLÉMENTÉ - 25 suites, 148 tests au vert, 100% < 200 l.]
 │       ├── weight-ema.test.ts                   # [IMPLÉMENTÉ - 169 l.] Tests EMA 7j, lissage du poids & parsing
 │       ├── workout-1rm-tonnage.test.ts          # [IMPLÉMENTÉ - 132 l.] Formule d'Epley, tonnage par séance
 │       ├── workout-pr-flags.test.ts             # [IMPLÉMENTÉ - 134 l.] Détection dynamique des PRs
@@ -169,6 +178,7 @@ FitnessApp/
 │       ├── nutrition-portions.test.ts           # [IMPLÉMENTÉ - 80 l.] Calculs de portions décimales
 │       ├── tdee.test.ts                         # [IMPLÉMENTÉ - 144 l.] Dépense énergétique réelle sur 14j
 │       ├── date-utils.test.ts                   # [IMPLÉMENTÉ - 133 l.] Dates ISO locales (Europe/Paris)
+│       ├── log-service-contract.test.ts         # [IMPLÉMENTÉ - 26 l.] Contrat d'interface et typage du service journal
 │       ├── auth-service.test.ts                 # [IMPLÉMENTÉ - 61 l.] Tests unitaires du service d'authentification
 │       ├── supabase-config.test.ts              # [IMPLÉMENTÉ - 39 l.] Tests bascule environnement Dev Mock / Prod Cloud
 │       ├── bottom-nav.test.tsx                  # [IMPLÉMENTÉ - 28 l.] Test barre de navigation iOS (5 onglets, safe area)
@@ -179,7 +189,12 @@ FitnessApp/
 │       ├── profile-targets-drawer.test.tsx      # [IMPLÉMENTÉ - 142 l.] Tests tiroir objectifs kcal & macros avec Vaul
 │       ├── today-page.test.tsx                  # [IMPLÉMENTÉ - 77 l.] Tests intégration page Aujourd'hui (Dashboard connecté)
 │       ├── today-chaos-weight.test.tsx          # [IMPLÉMENTÉ - 180 l.] Monkey testing chaos pesée (virgules, doubles clics, extrêmes)
-│       └── today-chaos-profile.test.tsx         # [IMPLÉMENTÉ - 191 l.] Monkey testing chaos cibles profil (bornes 0-10000, 4/4/9)
+│       ├── today-chaos-profile.test.tsx         # [IMPLÉMENTÉ - 191 l.] Monkey testing chaos cibles profil (bornes 0-10000, 4/4/9)
+│       ├── catalogs-exercises.test.tsx          # [IMPLÉMENTÉ - 162 l.] Tests filtrage 10 groupes musculaires, recherche & auto-seed
+│       ├── catalogs-foods.test.tsx              # [IMPLÉMENTÉ - 162 l.] Tests 3 modes de mesure (100g/unit/both), badges & calculs
+│       ├── catalogs-recipes.test.tsx            # [IMPLÉMENTÉ - 163 l.] Tests Meal Prep, diviseur portions_yield & normalisation 1 portion
+│       ├── catalogs-page.test.tsx               # [IMPLÉMENTÉ - 131 l.] Tests intégration page Catalogues (Segmented Control 3 onglets)
+│       └── catalogs-chaos.test.tsx              # [IMPLÉMENTÉ - 181 l.] Chaos testing catalogues (doubles clics, division 0, négatifs)
 ├── public/
 │   ├── manifest.json                            # [IMPLÉMENTÉ - 23 l.] PWA iOS Standalone (theme: #000000)
 │   └── data/
@@ -226,7 +241,15 @@ FitnessApp/
     │   │   ├── services/
     │   │   │   ├── exercises.service.ts         # [IMPLÉMENTÉ - 63 l.] CRUD Exercices + auto-seed JSON
     │   │   │   └── nutrition.service.ts         # [IMPLÉMENTÉ - 136 l.] CRUD Aliments & Recettes
-    │   │   └── components/                      # [À CODER - UI] MuscleFilterChips, ExerciseList, FoodList
+    │   │   └── components/                      # [IMPLÉMENTÉ - UI PHASE 3]
+    │   │       ├── MuscleFilterChips.tsx        # [IMPLÉMENTÉ - 51 l.] Sélecteur horizontal 10 groupes musculaires avec puces haptiques
+    │   │       ├── ExerciseList.tsx             # [IMPLÉMENTÉ - 169 l.] Liste filtrée, recherche temps réel, notes & badge muscle
+    │   │       ├── ExerciseFormDrawer.tsx       # [IMPLÉMENTÉ - 147 l.] Tiroir Vaul création/édition exercice personnalisé
+    │   │       ├── FoodList.tsx                 # [IMPLÉMENTÉ - 159 l.] Liste aliments avec badge mode (100g/pièce/mixte) & recherche
+    │   │       ├── FoodFormDrawer.tsx           # [IMPLÉMENTÉ - 160 l.] Tiroir Vaul saisie aliment, 3 modes, ratio 100g/portion & 4/4/9
+    │   │       ├── RecipeList.tsx               # [IMPLÉMENTÉ - 167 l.] Liste recettes avec diviseur Meal Prep & badge portion
+    │   │       ├── RecipeIngredientRowItem.tsx  # [IMPLÉMENTÉ - 100 l.] Ligne ingrédient réactive, sélection aliment & grammage
+    │   │       └── RecipeBuilderDrawer.tsx      # [IMPLÉMENTÉ - 184 l.] Tiroir Vaul composition recette, portions totales & macros /portion
     │   ├── workout/
     │   │   ├── types/
     │   │   │   └── workout-store.types.ts       # [IMPLÉMENTÉ - 69 l.] Interfaces du store de séance active
@@ -263,7 +286,7 @@ FitnessApp/
             ├── page.tsx                         # [IMPLÉMENTÉ - 141 l.] Onglet 1 : Aujourd'hui (Dashboard d'accueil complet connecté, pesée, EMA, cibles & navigation rapide)
             ├── workout/page.tsx                 # [IMPLÉMENTÉ - 19 l.] Onglet 2 : Entraînement & Séances (Placeholder anti-404)
             ├── nutrition/page.tsx               # [IMPLÉMENTÉ - 19 l.] Onglet 3 : Journal Nutrition & Macros (Placeholder anti-404)
-            ├── catalogs/page.tsx                # [IMPLÉMENTÉ - 19 l.] Onglet 4 : Catalogues (Aliments & Exercices) (Placeholder anti-404)
+            ├── catalogs/page.tsx                # [IMPLÉMENTÉ - UI PHASE 3 - 159 l.] Onglet 4 : Catalogues Partagés (Segmented Control 3 onglets Exercices/Aliments/Recettes, recherche réactive & FAB tiroirs)
             └── analytics/page.tsx               # [IMPLÉMENTÉ - 19 l.] Onglet 5 : Bilan, TDEE, Graphiques & Export (Placeholder anti-404)
 ```
 
@@ -312,12 +335,32 @@ FitnessApp/
 - **Saisie Rapide de Pesée (`src/features/daily-log/components/WeightQuickInput.tsx`)** : Déclencheur tactile avec bottom-sheet `Vaul`, sélecteur de date (par défaut aujourd'hui local), steppers rapides (`-0.5kg`, `-0.1kg`, `+0.1kg`, `+0.5kg`), parsing décimal flexible (point ou virgule française) via `parseDecimalInput` (`src/lib/math/weight-ema.math.ts`), sauvegarde transactionnelle et recalcul d'EMA 7j via `logWeightAndRecalculateEma` (Couche 2), avec feedback immédiat via `sonner`.
 - **Gestion des Cibles Nutritionnelles (`src/features/daily-log/components/ProfileTargetsDrawer.tsx`)** : Tiroir iOS `Vaul` permettant d'ajuster les cibles caloriques et les macronutriments (P, G, L) avec fonction d'auto-calcul instantané `calculateKcalFromMacros(p, g, l)` ($4P + 4G + 9L$ dans `src/lib/math/nutrition.math.ts`) et mise à jour dans `profiles` via `updateProfileTargets` (`profile.service.ts`).
 
+### 3.5 Module Catalogues Partagés : Exercices, Aliments & Plats Composés (Phase 3)
+- **Page Principale des Catalogues (`src/app/(protected)/catalogs/page.tsx`)** : Point d'entrée de l'onglet 4. Composé d'un Segmented Control iOS 3 positions (`exercices` | `aliments` | `recettes`), d'une barre de recherche instantanée avec filtrage réactif, et d'un bouton flottant contextuel (FAB) ouvrant le bon tiroir Vaul (`ExerciseFormDrawer`, `FoodFormDrawer`, `RecipeBuilderDrawer`).
+- **Catalogue d'Exercices & Filtrage Musculaire (`ExerciseList`, `MuscleFilterChips`, `ExerciseFormDrawer`)** :
+  - Auto-seed transparent depuis `public/data/exercises_seed.json` (40 mouvements standardisés) si le catalogue est vide.
+  - Sélecteur horizontal défilant `MuscleFilterChips` couvrant les 10 groupes musculaires anatomiques (`pectoraux`, `dos`, `quadriceps`, `ischios`, `fessiers`, `epaules`, `biceps`, `triceps`, `mollets`, `abdos`) avec puce "Tous".
+  - Support des exercices personnalisés (`is_custom: true`) et des notes personnelles (`user_exercise_notes`).
+- **Catalogue des Aliments & 3 Modes de Mesure (`FoodList`, `FoodFormDrawer`)** :
+  - **3 modes stricts** :
+    1. `100g` : Pesée classique (ex: riz, poulet cru, avoine).
+    2. `unit` : À l'unité / portion indivisible (ex: œuf entier, barre protéinée).
+    3. `both` : Double mesure avec poids unitaire de référence (ex: tranche de pain de 40g, compote de 90g).
+  - Validation interactive avec conversion automatique en base 100g si l'utilisateur saisit les macros par portion.
+  - Calcul automatique ou cohérence des calories ($4P + 4G + 9L$) via `calculateKcalFromMacros`.
+- **Plats Composés & Diviseur Meal Prep (`RecipeList`, `RecipeBuilderDrawer`, `RecipeIngredientRowItem`)** :
+  - Composition multi-ingrédients issue des aliments du catalogue.
+  - Diviseur Meal Prep : l'utilisateur saisit les ingrédients pour l'intégralité du plat (ex: 4 parts cuisinées le dimanche), et définit le nombre de parts (`portions_yield`, par défaut 1).
+  - **Règle d'Or Nutritionnelle** : Les macros et calories stockées et affichées en référence représentent **strictement 1 portion** ($total / portions\_yield$). La duplication ou consommation future s'opère ainsi par multiples décimaux de portions (ex: 1.5 portion) sans distorsion.
+- **Archivage Doux (Soft Delete) & Intégrité Référentielle** :
+  - Préservation absolue de l'historique : la suppression d'un aliment ou d'un exercice applique `is_archived = true` (soft delete). Les séances d'entraînement passées et les repas historiques conservent leur intégrité référentielle sans déclencher d'anomalie de clé étrangère.
+
 ---
 
 ## 4. Conventions de Code, Ergonomie iOS & Règles d'Or
 
 ### 4.1 Les 6 Règles d'Or du Dépôt
-1. **Règle des 200 lignes max par fichier** : Aucun fichier applicatif ou suite de tests ne doit dépasser 200 lignes. Vérifié : 100% des fichiers applicatifs dans `src/` (13 à 189 l.) et 100% des 20 suites de tests sous `tests/unit/` (24 à 192 l.) respectent strictement cette règle.
+1. **Règle des 200 lignes max par fichier** : Aucun fichier applicatif ou suite de tests ne doit dépasser 200 lignes. Vérifié : 100% des fichiers applicatifs dans `src/` (13 à 189 l.) et 100% des 25 suites de tests sous `tests/unit/` (26 à 192 l.) respectent strictement cette règle.
 2. **Isolation stricte des mathématiques** : Calculs purs logés exclusivement dans `src/lib/math/`, couverts à 100% par des tests unitaires déterministes.
 3. **Zéro appel Supabase dans l'UI** : Les composants React consomment exclusivement les fonctions des fichiers `services/*.service.ts`.
 4. **Typage strict indexé sur SQL** : Zéro `any`. Les schémas de données reposent intégralement sur `src/types/database.types.ts`.
@@ -342,6 +385,7 @@ FitnessApp/
 ### 4.4 Sécurité & Hardening (SecOps)
 - **Neutralisation Formula Injection (CWE-1236)** : La fonction `escapeCsvCell()` dans `src/features/analytics/services/export.service.ts` préfixe d'une apostrophe toute chaîne débutant par `=`, `+`, `-`, `@`, `\t` ou `\r`, prévenant l'exécution de formules arbitraires lors de l'ouverture des exports dans Microsoft Excel ou Apple Numbers.
 - **Cloisonnement RLS** : Cloisonnement strict sur `auth.uid() = user_id` garantissant qu'aucun utilisateur ne peut lire ou altérer les données de tiers. Seules les fonctions RPC explicitement contrôlées permettent la synchronisation au sein du couple partenaire.
+- **Archivage Doux (Soft Delete)** : Le flag `is_archived` protège la base contre les dissociations de clés étrangères et la perte de contexte historique.
 
 ---
 
@@ -350,9 +394,10 @@ FitnessApp/
 - [x] **Docker Desktop** : Lancé et opérationnel sur macOS hôte.
 - [x] **Démarrage Conteneurisé** : Validé via `docker compose up -d` (accessible sur `http://localhost:3000`).
 - [x] **Harnais de Tests Vitest** : Configuré avec `@vitejs/plugin-react` et `vite-tsconfig-paths` (`config/vitest.config.ts`).
-- [x] **Tests Unitaires & Chaos au Vert** : 20 suites modularisées sous `tests/unit/` (122 tests au vert, 100% GREEN, 0 avertissement, exécution via `docker compose exec app npm test` ou `docker compose exec app npx vitest run`).
+- [x] **Tests Unitaires & Chaos au Vert** : 25 suites modularisées sous `tests/unit/` (148 tests au vert, 100% GREEN, 0 avertissement, exécution via `docker compose exec app npm test` ou `docker compose exec app npx vitest run`).
 - [x] **UI Shell & Navigation iOS (Phase 1)** : Shell protégé, barre `BottomNav` 5 onglets avec Liquid Glass, `PageHeader` dynamique, formulaire `LoginForm` Apple HIG et routes de navigation anti-404 validés.
 - [x] **Journal Quotidien (Aujourd'hui), Pesée & Cibles (Phase 2)** : Composants `WeightQuickInput` et `ProfileTargetsDrawer` implémentés avec Drawer Vaul, Page d'accueil connectée avec compteurs animés `@number-flow/react`, recalcul EMA 7j en temps réel, auto-calcul macros ($4P + 4G + 9L$), tests unitaires et de chaos (monkey testing) validés.
+- [x] **Catalogues Partagés : Exercices, Aliments & Plats Composés (Phase 3)** : Segmented Control iOS 3 onglets, auto-seed 40 exercices avec filtrage 10 groupes musculaires, Aliments aux 3 modes de mesure (100g, unité, mixte), Plats Composés Meal Prep avec calcul dynamique ramené à 1 portion de référence, archivage doux (`is_archived: true`), 5 suites de tests dédiées dont chaos monkey testing (148 tests au total, 100% GREEN).
 - [x] **Typage strict généré** : `src/types/database.types.ts` présent et synchronisé avec le schéma SQL (14 tables, 5 enums, 3 RPCs, Relationships typées, 0 mot-clé `any`).
 - [ ] **Variables d'environnement** : Vérifier dans `.env.local` la présence de `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et `SUPABASE_PROJECT_ID`.
 - [ ] **Migration SQL** : Exécuter `supabase/migrations/001_initial_schema.sql` dans le SQL Editor de Supabase.

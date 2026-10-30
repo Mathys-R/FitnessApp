@@ -147,6 +147,10 @@ CREATE TABLE public.user_exercise_notes (
   UNIQUE(user_id, exercise_id)
 );
 
+CREATE TRIGGER trg_user_exercise_notes_updated_at
+BEFORE UPDATE ON public.user_exercise_notes
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================================================
 -- 4. PRESETS DE SÉANCES & HISTORIQUE MUSCULATION (Privé)
 -- ============================================================================
@@ -158,6 +162,10 @@ CREATE TABLE public.workout_presets (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TRIGGER trg_workout_presets_updated_at
+BEFORE UPDATE ON public.workout_presets
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TABLE public.workout_preset_exercises (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -184,6 +192,10 @@ CREATE TABLE public.workout_sessions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TRIGGER trg_workout_sessions_updated_at
+BEFORE UPDATE ON public.workout_sessions
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE INDEX idx_workout_sessions_user_date ON public.workout_sessions(user_id, session_date DESC);
 
@@ -227,6 +239,7 @@ CREATE INDEX idx_workout_sets_user_exercise ON public.workout_sets(user_id, exer
 -- 5. CATALOGUE NUTRITION : ALIMENTS & PLATS COMPOSÉS (Partagé Couple)
 -- ============================================================================
 CREATE TYPE food_serving_type AS ENUM ('100g', 'unit', 'both');
+CREATE TYPE logged_unit_type AS ENUM ('g', 'unit');
 
 CREATE TABLE public.foods (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -261,12 +274,16 @@ CREATE TABLE public.recipes (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TRIGGER trg_recipes_updated_at
+BEFORE UPDATE ON public.recipes
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TABLE public.recipe_ingredients (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   recipe_id UUID NOT NULL REFERENCES public.recipes(id) ON DELETE CASCADE,
   food_id UUID NOT NULL REFERENCES public.foods(id) ON DELETE RESTRICT,
   quantity_value NUMERIC(6,2) NOT NULL, -- Quantité de référence pour 1 portion
-  logged_unit TEXT NOT NULL DEFAULT 'g' CHECK (logged_unit IN ('g', 'unit'))
+  logged_unit logged_unit_type NOT NULL DEFAULT 'g'
 );
 
 -- ============================================================================
@@ -286,7 +303,7 @@ CREATE TABLE public.meal_entries (
   food_id UUID REFERENCES public.foods(id) ON DELETE SET NULL,
   recipe_id UUID REFERENCES public.recipes(id) ON DELETE SET NULL,
   quantity_value NUMERIC(6,2), -- Quantité si aliment simple ou nombre de portions (ex: 1.5) si recette
-  logged_unit TEXT DEFAULT 'g' CHECK (logged_unit IN ('g', 'unit')),
+  logged_unit logged_unit_type DEFAULT 'g',
   
   -- Totaux consolidés de la ligne (synchronisés automatiquement par trigger si entry_type = 'recipe')
   total_kcal NUMERIC(6,1) NOT NULL DEFAULT 0,
@@ -307,7 +324,7 @@ CREATE TABLE public.meal_entry_items (
   ingredient_name TEXT NOT NULL,
   serving_type food_serving_type NOT NULL DEFAULT '100g',
   unit_weight_g NUMERIC(6,2) NOT NULL DEFAULT 100,
-  logged_unit TEXT NOT NULL DEFAULT 'g' CHECK (logged_unit IN ('g', 'unit')),
+  logged_unit logged_unit_type NOT NULL DEFAULT 'g',
   
   -- Densité nutritionnelle figée au clonage
   kcal_per_base NUMERIC(6,1) NOT NULL DEFAULT 0,

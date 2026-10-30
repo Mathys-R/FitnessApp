@@ -100,6 +100,11 @@ export async function logWeightAndRecalculateEma(
 }
 
 /**
+ * Alias conforme à la spécification nominale Phase 2 (§3)
+ */
+export const upsertWeightAndRecalculateEma = logWeightAndRecalculateEma;
+
+/**
  * 3. Active ou désactive l'exclusion manuelle d'une journée pour le calcul du TDEE 14j
  */
 export async function toggleExcludeFromTdee(

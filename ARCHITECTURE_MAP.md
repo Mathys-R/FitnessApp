@@ -29,8 +29,8 @@
 │ Code Reviewer      │ Règle des 200 lignes max respectée à 100% sur le code source      │
 │                    │ (fichiers src/ de 13 à 189 l., tests unitaires de 28 à 192 l.).    │
 │                    │ Typage TypeScript strict à 100% : ZÉRO mot-clé `any`.             │
-│                    │ 19 suites de tests unitaires modularisées créées (tests/unit/).   │
-│                    │ 120 tests unitaires & chaos exécutés avec succès (100% GREEN).    │
+│                    │ 20 suites de tests unitaires modularisées créées (tests/unit/).   │
+│                    │ 122 tests unitaires & chaos exécutés avec succès (100% GREEN).    │
 │                    │ Robustesse validée par Monkey Testing chaos (doubles clics        │
 │                    │ frénétiques, valeurs aberrantes, virgules françaises, bornes).    │
 │                    │ ESLint Next.js validé (0 avertissement, 0 erreur).                │
@@ -102,7 +102,7 @@ docker compose exec app npm run typecheck
 # 6. Analyse de linting Next.js / ESLint
 docker compose exec app npm run lint
 
-# 7. Exécution des Tests Unitaires & Composants (120 tests au vert, 19 suites modularisées)
+# 7. Exécution des Tests Unitaires & Composants (122 tests au vert, 20 suites modularisées)
 docker compose exec app npm test
 
 # 8. Mode TDD interactif / surveillance des tests
@@ -317,7 +317,7 @@ FitnessApp/
 ## 4. Conventions de Code, Ergonomie iOS & Règles d'Or
 
 ### 4.1 Les 6 Règles d'Or du Dépôt
-1. **Règle des 200 lignes max par fichier** : Aucun fichier applicatif ou suite de tests ne doit dépasser 200 lignes. Vérifié : 100% des fichiers applicatifs dans `src/` (13 à 189 l.) et 100% des 19 suites de tests sous `tests/unit/` (28 à 192 l.) respectent strictement cette règle.
+1. **Règle des 200 lignes max par fichier** : Aucun fichier applicatif ou suite de tests ne doit dépasser 200 lignes. Vérifié : 100% des fichiers applicatifs dans `src/` (13 à 189 l.) et 100% des 20 suites de tests sous `tests/unit/` (24 à 192 l.) respectent strictement cette règle.
 2. **Isolation stricte des mathématiques** : Calculs purs logés exclusivement dans `src/lib/math/`, couverts à 100% par des tests unitaires déterministes.
 3. **Zéro appel Supabase dans l'UI** : Les composants React consomment exclusivement les fonctions des fichiers `services/*.service.ts`.
 4. **Typage strict indexé sur SQL** : Zéro `any`. Les schémas de données reposent intégralement sur `src/types/database.types.ts`.
@@ -350,7 +350,7 @@ FitnessApp/
 - [x] **Docker Desktop** : Lancé et opérationnel sur macOS hôte.
 - [x] **Démarrage Conteneurisé** : Validé via `docker compose up -d` (accessible sur `http://localhost:3000`).
 - [x] **Harnais de Tests Vitest** : Configuré avec `@vitejs/plugin-react` et `vite-tsconfig-paths` (`config/vitest.config.ts`).
-- [x] **Tests Unitaires & Chaos au Vert** : 19 suites modularisées sous `tests/unit/` (120 tests au vert, 100% GREEN, 0 avertissement, exécution via `docker compose exec app npm test`).
+- [x] **Tests Unitaires & Chaos au Vert** : 20 suites modularisées sous `tests/unit/` (122 tests au vert, 100% GREEN, 0 avertissement, exécution via `docker compose exec app npm test` ou `docker compose exec app npx vitest run`).
 - [x] **UI Shell & Navigation iOS (Phase 1)** : Shell protégé, barre `BottomNav` 5 onglets avec Liquid Glass, `PageHeader` dynamique, formulaire `LoginForm` Apple HIG et routes de navigation anti-404 validés.
 - [x] **Journal Quotidien (Aujourd'hui), Pesée & Cibles (Phase 2)** : Composants `WeightQuickInput` et `ProfileTargetsDrawer` implémentés avec Drawer Vaul, Page d'accueil connectée avec compteurs animés `@number-flow/react`, recalcul EMA 7j en temps réel, auto-calcul macros ($4P + 4G + 9L$), tests unitaires et de chaos (monkey testing) validés.
 - [x] **Typage strict généré** : `src/types/database.types.ts` présent et synchronisé avec le schéma SQL (14 tables, 5 enums, 3 RPCs, Relationships typées, 0 mot-clé `any`).

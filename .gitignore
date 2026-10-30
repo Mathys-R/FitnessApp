@@ -3,6 +3,7 @@
 /.next/
 /out/
 /build
+/coverage
 
 # Variables d'environnement secrètes
 .env*.local

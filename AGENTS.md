@@ -18,10 +18,10 @@ Pour n'importe quelle demande de l'utilisateur, tu appliques **strictement et sa
 
 - 🚀 **Nouvelle Fonctionnalité, Évolution ou Nouveau Composant** ➔ Déclenche `workflow-feature-implementation` :
   - **Phase 1 (Cadrage & Lots étanches)** : Lis `ARCHITECTURE_MAP.md`. Délègue à `tech-lead` pour l'étude d'impact et le découpage en lots disjoints.
-  - **Phase 2 (Parallélisation Fan-Out : Multi-Coders & Tester)** : **Interdiction de sérialiser.** L'Orchestrateur lance simultanément dans le même message un `coder` par lot étanche (`coder-lot-1`, `coder-lot-2`, etc.) et le `tester` pour les fixtures et tests TDD. L'intégration de la page d'accueil/mère intervient en Fan-In.
-  - **Phase 3 (Double Audit Contradictoire)** : `reviewer` (audit technique 200 l., 0 any, 3 couches) + `tech-lead` (Challenger Métier vs `docs/phases/`).
-  - **Phase 4 (Gate & Rework Loop Autonome)** : Si rejet, renvoi automatique de `coder`/`tester` en correction. Zéro intervention humaine avant l'obtention d'un `[APPROVE]` unanime.
-  - **Phase 5 (Clôture & Cartographie)** : `tester` (Browser Monkey Testing iPhone `390x844`) et `document-agent` (MAJ `ARCHITECTURE_MAP.md` via Repomix).
+  - **Phase 2 (Fan-Out & Pipelining par lot : Coder ➔ Tester ➔ Reviewer)** : L'Orchestrateur lance simultanément dans le même message un `coder` par lot étanche (`coder-lot-1`, `coder-lot-2`, etc.). Dès qu'un codeur termine son lot, un `tester` dédié (`tester-lot-i`) écrit les tests unitaires. Dès que les tests sont au vert, un `reviewer` dédié (`reviewer-lot-i`) valide le code sur son périmètre isolé (Micro-Gate locale). L'assemblage final (page mère) n'est réalisé qu'une fois tous les lots approuvés.
+  - **Phase 3 (Macro-Gate Globale d'Intégration & Métier)** : `tech-lead` (Challenger Métier E2E confrontant l'ensemble du flux utilisateur à `docs/phases/`) + `reviewer` (audit d'intégration transverse, absence de duplication).
+  - **Phase 4 (Rework & Clôture Runtime)** : Si rejet, ré-évaluation autonome sans délai. Dès validation à 100% de la Macro-Gate : Browser Monkey Testing iPhone `390x844` (`tester`).
+  - **Phase 5 (Cartographie)** : `document-agent` (MAJ `ARCHITECTURE_MAP.md` via Repomix).
 
 - 🐞 **Signalement d'un Bug, Anomalie (ANO) ou Scénario Échoué** ➔ Déclenche `workflow-bugfix-user-story` :
   - **Phase 1 (Localisation)** : Cible les fichiers via `ARCHITECTURE_MAP.md`.
@@ -40,9 +40,9 @@ Pour n'importe quelle demande de l'utilisateur, tu appliques **strictement et sa
 
 ## 3. Loi d'Isolation des Rôles, Parallélisation & Contextes
 1. **Prévention du Biais de Confirmation** : Ne relis jamais ton propre code dans la même session. Délègue systématiquement les phases de conception (`tech-lead`), de codage (`coder`), de test (`tester`), de revue (`reviewer`), d'audit (`security-auditor`) et de documentation (`document-agent`) via des subagents (`invoke_subagent` ou contextes isolés).
-2. **Loi du Fan-Out Parallèle (Multi-Coders & Tester Simultanés)** : Dès que l'Implementation Plan découpe le travail en lots étanches, l'Orchestrateur lance simultanément (dans le même turn) un `coder` par lot étanche et le `tester` en amont pour les fixtures et squelettes de tests. Interdiction formelle de regrouper tous les sous-lots chez un seul Coder séquentiel.
+2. **Loi du Fan-Out Parallèle & Pipelining Coder ➔ Tester ➔ Reviewer par Lot (Micro-Gates)** : Dès que l'Implementation Plan découpe le travail en lots étanches, l'Orchestrateur lance simultanément un `coder` par lot étanche. À chaque fois qu'un codeur termine son lot, un `tester` dédié écrit les tests, suivi immédiatement d'un `reviewer` dédié pour certifier localement la conformité technique (Micro-Gate du lot). En cas de rejet local, seul le binôme du lot concerné corrige son travail, sans bloquer les autres pistes.
 3. **Biais Proactif d'Outillage Repomix MCP** : Lors de toute invocation d'un sous-agent (`tech-lead`, `reviewer`, `document-agent`) pour une tâche d'analyse, de conception ou de cartographie, le prompt de mission émis par l'Orchestrateur DOIT obligatoirement ordonner l'utilisation de l'outil Repomix MCP (`pack_codebase`) pour garantir une extraction d'interfaces et de blast radius sans dispersion.
-3. **Respect des 5 Règles d'Or de `FitnessApp`** :
+4. **Respect des 5 Règles d'Or de `FitnessApp`** :
    - **Règle 1 : 200 lignes max par fichier** (hors `database.types.ts`). Scinder systématiquement.
    - **Règle 2 : 3 Couches étanches** :
      - *Layer 1 (Maths pures)* : `src/lib/math/`, zéro React, zéro Supabase.
@@ -51,7 +51,7 @@ Pour n'importe quelle demande de l'utilisateur, tu appliques **strictement et sa
    - **Règle 3 : Typage strict indexé sur SQL** : Zéro `any`.
    - **Règle 4 : Filtrage PostgREST sur jointures aliasées** : Cibler l'alias (`session.status`, `session_exercise.session.session_date`) et jamais le nom de table brut.
    - **Règle 5 : Dates locales iPhone (Anti-Bug UTC)** : Utiliser impérativement `src/lib/date.utils.ts`.
-3. **Ergonomie PWA iOS (Apple HIG)** :
+5. **Ergonomie PWA iOS (Apple HIG)** :
    - Fond OLED pur `#000000`, cartes `#1C1C1E`, inputs `#2C2C2E`.
    - Anti-Zoom Safari : `text-base` (16px minimum) obligatoire sur tous les inputs.
    - `tabular-nums` sur toutes les valeurs chiffrées (poids, reps, calories, chronos).
@@ -60,15 +60,17 @@ Pour n'importe quelle demande de l'utilisateur, tu appliques **strictement et sa
 
 ---
 
-## 4. Loi de la Gate & Rework Automatique (Feedback Loop Obligatoire)
-1. **Double Audit Indépendant** :
-   - `reviewer` : Audit technique (Clean code, 200 lignes max, zéro `any`, 3 couches, typage strict).
-   - `tech-lead` (Challenger Métier) : Audit fonctionnel contradictoire ligne par ligne par rapport aux spécifications de `docs/phases/`.
-2. **Boucle de Rework Autonome (Zero-Human-Delay)** :
-   - Tout `[REJECT]` ou réserve majeure renvoie **automatiquement** le `coder` et le `tester` en correction.
-   - La boucle tourne de façon autonome jusqu'à l'obtention d'un `[APPROVE]` unanime sur la Gate.
-3. **Clôture Post-Gate** :
-   - Le Browser Monkey Testing sur `http://localhost:3000` et la mise à jour d'`ARCHITECTURE_MAP.md` ne sont déclenchés qu'une fois la Gate franchie à 100%.
+## 4. Loi de la Gate & Rework Automatique (Architecture Duale)
+1. **Niveau 1 : Micro-Gates Techniques Locales (par lot)** :
+   - `reviewer-lot-i` audite immédiatement chaque lot : Clean code, 200 lignes max, zéro `any`, étanchéité de la Couche 3, typage strict.
+2. **Niveau 2 : Macro-Gate Globale d'Intégration & Métier (clôture d'assemblage)** :
+   - `tech-lead` (Challenger Métier) : Audit fonctionnel contradictoire de bout en bout par rapport aux spécifications de `docs/phases/` (circulation des données, stores, calculs et UX mobile).
+   - `reviewer` (Audit d'Intégration Transverse) : Contrôle de la cohérence de l'assemblage et absence de duplication.
+3. **Boucle de Rework Autonome (Zero-Human-Delay)** :
+   - Tout `[REJECT]` (en Micro-Gate ou Macro-Gate) renvoie **automatiquement** les agents concernés en correction.
+   - La boucle tourne de façon autonome jusqu'à l'obtention d'un `[APPROVE]` unanime sur la Macro-Gate.
+4. **Clôture Post-Macro-Gate** :
+   - Le Browser Monkey Testing sur `http://localhost:3000` et la mise à jour d'`ARCHITECTURE_MAP.md` ne sont déclenchés qu'une fois la Macro-Gate franchie à 100%.
 
 ---
 

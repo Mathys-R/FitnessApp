@@ -34,41 +34,42 @@ export async function getExerciseGhostAndRecords(
     .eq('exercise_id', exerciseId)
     .maybeSingle();
 
-  let sessionsQuery = supabase
-    .from('workout_session_exercises')
+  let query = supabase
+    .from('workout_sessions')
     .select(`
       id,
-      session_id,
-      session:workout_sessions!inner (
-        session_date,
-        status,
-        created_at
-      ),
-      workout_sets (
-        set_number,
-        weight_kg,
-        reps,
-        rest_seconds,
-        is_warmup,
-        is_completed,
-        epley_1rm
+      session_date,
+      workout_session_exercises!inner (
+        id,
+        exercise_id,
+        workout_sets (
+          set_number,
+          weight_kg,
+          reps,
+          rest_seconds,
+          is_warmup,
+          is_completed,
+          epley_1rm
+        )
       )
     `)
     .eq('user_id', user.id)
-    .eq('exercise_id', exerciseId)
-    .eq('session.status', 'completed'); // Correctif PostgREST : utilisation de l'alias `session`
+    .eq('status', 'completed')
+    .eq('workout_session_exercises.exercise_id', exerciseId)
+    .order('session_date', { ascending: false });
 
   if (excludeSessionId) {
-    sessionsQuery = sessionsQuery.neq('session_id', excludeSessionId);
+    query = query.neq('id', excludeSessionId);
   }
 
-  // Optimisation 2-3-2 : charge uniquement la dernière séance effectuée (limit 1)
-  const { data: lastCompletedEntries } = await sessionsQuery
-    .order('created_at', { ascending: false })
-    .limit(1);
+  // Optimisation : charge uniquement la dernière séance effectuée selon la date d'agenda
+  const { data: lastSessions } = await query.limit(1);
 
-  const lastEntry = lastCompletedEntries?.[0];
-  const lastSets = (lastEntry?.workout_sets ?? [])
+  const sessionExercises = lastSessions?.[0]?.workout_session_exercises ?? [];
+  const matchedExercise =
+    sessionExercises.find((ex) => ex.exercise_id === exerciseId) ?? sessionExercises[0];
+
+  const lastSets = (matchedExercise?.workout_sets ?? [])
     .filter((s) => s.is_completed)
     .sort((a, b) => a.set_number - b.set_number)
     .map((s) => ({

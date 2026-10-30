@@ -26,7 +26,7 @@ describe('Catalog Chaos & Monkey Testing Suite', () => {
   });
 
   it('clics frénétiques & soumissions rapides : protection contre doubles appels', async () => {
-    let resolveEx: (val: ExerciseRow) => void = () => {};
+    let resolveEx: (val: ExerciseRow) => void = () => { };
     vi.mocked(createOrUpdateExercise).mockReturnValue(new Promise((r) => { resolveEx = r; }));
 
     const { unmount } = render(
@@ -49,7 +49,7 @@ describe('Catalog Chaos & Monkey Testing Suite', () => {
   });
 
   it('double soumission concurrente sur FoodForm et RecipeBuilder', async () => {
-    let resolveFood: (val: FoodRow) => void = () => {};
+    let resolveFood: (val: FoodRow) => void = () => { };
     vi.mocked(createOrUpdateFood).mockReturnValue(new Promise((r) => { resolveFood = r; }));
 
     const { unmount: unmountFood } = render(
@@ -65,7 +65,7 @@ describe('Catalog Chaos & Monkey Testing Suite', () => {
     resolveFood(mockFoodEgg);
     unmountFood();
 
-    let resolveRecipe: (val: string) => void = () => {};
+    let resolveRecipe: (val: string) => void = () => { };
     vi.mocked(saveRecipeSingleServing).mockReturnValue(new Promise((r) => { resolveRecipe = r; }));
 
     const { unmount: unmountRecipe } = render(

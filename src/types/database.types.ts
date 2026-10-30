@@ -10,6 +10,7 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+
       profiles: {
         Row: {
           id: string;
@@ -41,6 +42,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       daily_logs: {
         Row: {
@@ -91,6 +93,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       exercises: {
         Row: {
@@ -126,6 +129,7 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       user_exercise_notes: {
         Row: {
@@ -149,6 +153,7 @@ export interface Database {
           pinned_note?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       workout_presets: {
         Row: {
@@ -175,6 +180,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       workout_preset_exercises: {
         Row: {
@@ -207,6 +213,22 @@ export interface Database {
           default_reps?: number | null;
           default_weight_kg?: number | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: "workout_preset_exercises_preset_id_fkey";
+            columns: ["preset_id"];
+            isOneToOne: false;
+            referencedRelation: "workout_presets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "workout_preset_exercises_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "exercises";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       workout_sessions: {
         Row: {
@@ -245,6 +267,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       workout_session_exercises: {
         Row: {
@@ -274,6 +297,29 @@ export interface Database {
           session_note?: string | null;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "workout_session_exercises_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "workout_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "workout_session_exercises_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "exercises";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "workout_session_exercises_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       workout_sets: {
         Row: {
@@ -319,6 +365,29 @@ export interface Database {
           is_pr?: boolean;
           performed_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "workout_sets_session_exercise_id_fkey";
+            columns: ["session_exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "workout_session_exercises";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "workout_sets_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "exercises";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "workout_sets_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       foods: {
         Row: {
@@ -366,6 +435,7 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       recipes: {
         Row: {
@@ -395,6 +465,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       recipe_ingredients: {
         Row: {
@@ -418,6 +489,22 @@ export interface Database {
           quantity_value?: number;
           logged_unit?: Database['public']['Enums']['logged_unit_type'];
         };
+        Relationships: [
+          {
+            foreignKeyName: "recipe_ingredients_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_ingredients_food_id_fkey";
+            columns: ["food_id"];
+            isOneToOne: false;
+            referencedRelation: "foods";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       meal_entries: {
         Row: {
@@ -471,6 +558,36 @@ export interface Database {
           total_l?: number;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "meal_entries_daily_log_id_fkey";
+            columns: ["daily_log_id"];
+            isOneToOne: false;
+            referencedRelation: "daily_logs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "meal_entries_food_id_fkey";
+            columns: ["food_id"];
+            isOneToOne: false;
+            referencedRelation: "foods";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "meal_entries_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "meal_entries_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       meal_entry_items: {
         Row: {
@@ -530,7 +647,26 @@ export interface Database {
           g?: number;
           l?: number;
         };
+        Relationships: [
+          {
+            foreignKeyName: "meal_entry_items_meal_entry_id_fkey";
+            columns: ["meal_entry_id"];
+            isOneToOne: false;
+            referencedRelation: "meal_entries";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "meal_entry_items_food_id_fkey";
+            columns: ["food_id"];
+            isOneToOne: false;
+            referencedRelation: "foods";
+            referencedColumns: ["id"];
+          }
+        ];
       };
+    };
+    Views: {
+      [_ in never]: never;
     };
     Functions: {
       get_partner_info: {
@@ -558,6 +694,9 @@ export interface Database {
       meal_category: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'pre_post_workout';
       meal_entry_type: 'quick_add' | 'food' | 'recipe';
       workout_session_status: 'planned' | 'in_progress' | 'completed' | 'rest_day';
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }

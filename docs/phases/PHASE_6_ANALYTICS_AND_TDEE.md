@@ -106,3 +106,8 @@ L'écran d'accueil unifie en un seul coup d'œil les 4 piliers quotidiens :
   - Aucun appel `supabase.from()` n'existe dans un fichier `.tsx`.
   - Tous les calculs résident dans `src/lib/math/*.ts`.
   - `npx tsc --noEmit` et `npm run build` compilent avec 0 erreur et 0 `any`.
+
+---
+
+## ⚠️ Points d'Attention pour le Développement UI (Issus de l'Audit Pré-Dev)
+1. **Gestion des Téléchargements multiples sur Safari iOS** : Safari Mobile bloque l'ouverture séquentielle de plusieurs téléchargements automatiques de fichiers. Dans l'UI d'export, prévoir soit un déclenchement unifié via archive ZIP (ex: `JSZip`), soit 3 boutons d'export CSV distincts pour chaque table (`daily_logs.csv`, `nutrition_history.csv`, `workout_history.csv`) en plus du bouton JSON global.

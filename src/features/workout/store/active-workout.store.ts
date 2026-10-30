@@ -3,68 +3,27 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getLocalTodayIso } from '@/lib/date.utils';
 import { recomputeSessionSetsPrFlags } from '@/lib/math/workout-kpis.math';
+import type {
+  ActiveWorkoutSet,
+  ActiveWorkoutExercise,
+  ActiveWorkoutState,
+} from '../types/workout-store.types';
 
-export interface ActiveWorkoutSet {
-  local_id: string;
-  set_number: number;
-  weight_input: string;
-  reps_input: string;
-  ghost_weight_kg: number | null;
-  ghost_reps: number | null;
-  rest_seconds: number;
-  is_warmup: boolean;
-  is_completed: boolean;
-  is_pr: boolean;
-}
-
-export interface ActiveWorkoutExercise {
-  local_id: string;
-  exercise_id: string;
-  exercise_name: string;
-  primary_muscle: string;
-  pinned_note: string;
-  session_note: string;
-  historical_max_weight_kg: number;
-  historical_max_1rm_kg: number;
-  sets: ActiveWorkoutSet[];
-}
-
-interface ActiveWorkoutState {
-  isActive: boolean;
-  editingSessionId: string | null;
-  plannedSessionId: string | null;
-  sourcePresetId: string | null;
-  sessionDate: string;
-  sessionName: string;
-  startedAtIso: string | null;
-  exercises: ActiveWorkoutExercise[];
-
-  startSession: (payload: {
-    sessionName: string;
-    sessionDate?: string;
-    editingSessionId?: string | null;
-    plannedSessionId?: string | null;
-    sourcePresetId?: string | null;
-    exercises?: ActiveWorkoutExercise[];
-  }) => void;
-  updateSetField: (
-    exLocalId: string,
-    setLocalId: string,
-    field: 'weight_input' | 'reps_input' | 'rest_seconds' | 'is_warmup',
-    value: string | number | boolean
-  ) => void;
-  toggleCompleteSetWithGhostFallback: (exLocalId: string, setLocalId: string) => { becamePr: boolean };
-  updateExerciseNotes: (exLocalId: string, field: 'pinned_note' | 'session_note', value: string) => void;
-  addExerciseToSession: (exercise: ActiveWorkoutExercise) => void;
-  removeExerciseFromSession: (exLocalId: string) => void;
-  addSetToExercise: (exLocalId: string) => void;
-  removeSetFromExercise: (exLocalId: string, setLocalId: string) => void;
-  clearActiveSession: () => void;
-}
+export type {
+  ActiveWorkoutSet,
+  ActiveWorkoutExercise,
+  ActiveWorkoutState,
+};
 
 const INITIAL_STATE = {
-  isActive: false, editingSessionId: null, plannedSessionId: null, sourcePresetId: null,
-  sessionDate: getLocalTodayIso(), sessionName: '', startedAtIso: null, exercises: [] as ActiveWorkoutExercise[],
+  isActive: false,
+  editingSessionId: null,
+  plannedSessionId: null,
+  sourcePresetId: null,
+  sessionDate: getLocalTodayIso(),
+  sessionName: '',
+  startedAtIso: null,
+  exercises: [] as ActiveWorkoutExercise[],
 };
 
 export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
@@ -95,10 +54,16 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
         set((state) => ({
           exercises: state.exercises.map((ex) => {
             if (ex.local_id !== exLocalId) return ex;
-            const updated = ex.sets.map((s) => (s.local_id === setLocalId ? { ...s, [field]: value } : s));
+            const updated = ex.sets.map((s) =>
+              s.local_id === setLocalId ? { ...s, [field]: value } : s
+            );
             return {
               ...ex,
-              sets: recomputeSessionSetsPrFlags(updated, ex.historical_max_weight_kg, ex.historical_max_1rm_kg),
+              sets: recomputeSessionSetsPrFlags(
+                updated,
+                ex.historical_max_weight_kg,
+                ex.historical_max_1rm_kg
+              ),
             };
           }),
         })),
@@ -140,13 +105,18 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
 
       updateExerciseNotes: (exLocalId, field, value) =>
         set((state) => ({
-          exercises: state.exercises.map((ex) => (ex.local_id === exLocalId ? { ...ex, [field]: value } : ex)),
+          exercises: state.exercises.map((ex) =>
+            ex.local_id === exLocalId ? { ...ex, [field]: value } : ex
+          ),
         })),
 
-      addExerciseToSession: (exercise) => set((state) => ({ exercises: [...state.exercises, exercise] })),
+      addExerciseToSession: (exercise) =>
+        set((state) => ({ exercises: [...state.exercises, exercise] })),
 
       removeExerciseFromSession: (exLocalId) =>
-        set((state) => ({ exercises: state.exercises.filter((ex) => ex.local_id !== exLocalId) })),
+        set((state) => ({
+          exercises: state.exercises.filter((ex) => ex.local_id !== exLocalId),
+        })),
 
       addSetToExercise: (exLocalId) =>
         set((state) => ({
@@ -183,12 +153,17 @@ export const useActiveWorkoutStore = create<ActiveWorkoutState>()(
               .map((s, idx) => ({ ...s, set_number: idx + 1 }));
             return {
               ...ex,
-              sets: recomputeSessionSetsPrFlags(filtered, ex.historical_max_weight_kg, ex.historical_max_1rm_kg),
+              sets: recomputeSessionSetsPrFlags(
+                filtered,
+                ex.historical_max_weight_kg,
+                ex.historical_max_1rm_kg
+              ),
             };
           }),
         })),
 
-      clearActiveSession: () => set({ ...INITIAL_STATE, sessionDate: getLocalTodayIso() }),
+      clearActiveSession: () =>
+        set({ ...INITIAL_STATE, sessionDate: getLocalTodayIso() }),
     }),
     { name: 'fitcouple-active-workout-v1' }
   )

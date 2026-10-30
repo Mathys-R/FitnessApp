@@ -110,3 +110,9 @@
 - [ ] **Test PR Dynamique :** Sur un exercice où le record est `80 kg × 8`, valider Série 1 à `82.5 kg × 8` (PR activé), puis Série 2 à `82.5 kg × 6` (pas de faux PR sur Série 2), puis Série 3 à `85 kg × 8` (nouveau PR sur Série 3).
 - [ ] **Test Ré-édition / Suppression de séance & Note épinglée vide :** Corriger une charge erronée sur une séance passée et vérifier la mise à jour du record ; effacer une `pinned_note` et vérifier qu'elle est bien supprimée en base.
 - [ ] Aucun fichier ne dépasse 200 lignes ; `npx tsc --noEmit` retourne 0 erreur.
+
+---
+
+## ⚠️ Points d'Attention pour le Développement UI (Issus de l'Audit Pré-Dev)
+1. **Composant `ExercisePickerDrawer`** : Prévoir un tiroir Vaul dédié permettant de rechercher et sélectionner un exercice du catalogue pendant une séance en cours (bouton "Ajouter un exercice").
+2. **Dialogue de confirmation d'abandon** : Sécuriser impérativement l'action d'abandon de séance (`clearActiveSession()`) avec une modale ou une alerte de confirmation iOS native pour éviter toute perte accidentelle des séries saisies.

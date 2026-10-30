@@ -9,11 +9,18 @@ export interface CsvExportBundle {
 
 /**
  * Échappe proprement une valeur pour un fichier CSV compatible Excel / Numbers iOS
+ * Neutralise les attaques par injection de formule (CWE-1236 / OWASP)
  */
 function escapeCsvCell(value: string | number | boolean | null | undefined): string {
   if (value === null || value === undefined) return '';
-  const str = String(value);
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+  let str = String(value);
+
+  // Neutralisation Formula Injection (CWE-1236) si début par =, +, -, @, \t, \r
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
+
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes("'")) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;

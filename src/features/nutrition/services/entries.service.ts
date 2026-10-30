@@ -3,14 +3,26 @@ import { createClient } from '@/lib/supabase/client';
 import { getOrCreateDailyLog, type DailyLogRow } from '@/features/daily-log/services/log.service';
 import { calculateFoodMacros, type LoggedUnit, type MacroValues } from '@/lib/math/nutrition.math';
 import type { Database } from '@/types/database.types';
+import {
+  getPartnerInfo,
+  copyMealFromSource,
+  type MealCategory,
+  type PartnerInfo,
+} from './couple-sync.service';
 
-export type MealCategory = Database['public']['Enums']['meal_category'];
+export { getPartnerInfo, copyMealFromSource, type MealCategory, type PartnerInfo };
+
 export type MealEntryRow = Database['public']['Tables']['meal_entries']['Row'];
 export type MealEntryItemRow = Database['public']['Tables']['meal_entry_items']['Row'];
 export type FoodRow = Database['public']['Tables']['foods']['Row'];
 
+export interface MealEntryItemWithFood extends MealEntryItemRow {
+  food?: FoodRow | null;
+}
+
 export interface MealEntryWithItems extends MealEntryRow {
-  meal_entry_items: MealEntryItemRow[];
+  food?: FoodRow | null;
+  meal_entry_items: MealEntryItemWithFood[];
 }
 
 export interface DailyNutritionData {
@@ -29,7 +41,11 @@ export async function getDailyNutrition(logDate: string): Promise<DailyNutrition
     .from('meal_entries')
     .select(`
       *,
-      meal_entry_items (*)
+      food:foods (*),
+      meal_entry_items (
+        *,
+        food:foods (*)
+      )
     `)
     .eq('daily_log_id', dailyLog.id)
     .order('created_at', { ascending: true });
@@ -156,34 +172,3 @@ export async function deleteMealEntry(entryId: string): Promise<void> {
   const { error } = await supabase.from('meal_entries').delete().eq('id', entryId);
   if (error) throw new Error(`Erreur suppression ligne de repas : ${error.message}`);
 }
-
-/**
- * 5. Copie rapide de repas (Hier ou Partenaire) & Info Partenaire
- */
-export async function getPartnerInfo(): Promise<{ partner_id: string; partner_name: string } | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase.rpc('get_partner_info');
-  if (error || !data || data.length === 0) return null;
-  return data[0];
-}
-
-export async function copyMealFromSource(params: {
-  sourceUserId: string;
-  sourceDate: string;
-  sourceMealType: MealCategory;
-  targetDailyLogId: string;
-  targetMealType: MealCategory;
-}): Promise<number> {
-  const supabase = createClient();
-  const { data, error } = await supabase.rpc('copy_meal_entries', {
-    p_source_user_id: params.sourceUserId,
-    p_source_date: params.sourceDate,
-    p_source_meal_type: params.sourceMealType,
-    p_target_daily_log_id: params.targetDailyLogId,
-    p_target_meal_type: params.targetMealType,
-  });
-
-  if (error) throw new Error(`Erreur copie du repas : ${error.message}`);
-  return data ?? 0;
-}
-

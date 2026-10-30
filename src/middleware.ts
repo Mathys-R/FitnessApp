@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: Parameters<typeof supabaseResponse.cookies.set>[2] }>) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
@@ -30,16 +30,24 @@ export async function middleware(request: NextRequest) {
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login');
 
+  const createRedirectWithCookies = (url: URL) => {
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((c) => {
+      redirectResponse.cookies.set(c.name, c.value, c);
+    });
+    return redirectResponse;
+  };
+
   if (!user && !isAuthPage) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
-    return NextResponse.redirect(loginUrl);
+    return createRedirectWithCookies(loginUrl);
   }
 
   if (user && isAuthPage) {
     const homeUrl = request.nextUrl.clone();
     homeUrl.pathname = '/';
-    return NextResponse.redirect(homeUrl);
+    return createRedirectWithCookies(homeUrl);
   }
 
   return supabaseResponse;
@@ -48,4 +56,3 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json|icon-.*\\.png|data/.*).*)'],
 };
-

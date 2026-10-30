@@ -1,0 +1,26 @@
+FROM node:20-alpine
+
+# Support pour libc6-compat (optimisations Next.js / Turbopack sous Alpine)
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Copie des manifestes de dépendances pour bénéficier du cache de layer Docker
+COPY package.json package-lock.json* ./
+
+# Installation des dépendances dans l'environnement conteneurisé
+RUN npm install
+
+# Copie du code source complet
+COPY . .
+
+# Exposition du port du serveur Next.js
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+ENV NODE_ENV=development
+
+# Démarrage du serveur de dev Next.js en écoute sur toutes les interfaces
+CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0"]
+

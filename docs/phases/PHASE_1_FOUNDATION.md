@@ -130,3 +130,9 @@ npx supabase gen types typescript --project-id "<TON_PROJECT_ID>" --schema publi
 - [ ] **Composants UI Phase 1 `[À CODER - UI]` :** Développer `src/app/(auth)/login/page.tsx`, `src/app/(protected)/layout.tsx` et `src/components/layout/PageHeader.tsx`.
 - [ ] Les 2 comptes du couple peuvent se connecter sur `/login` et l'inscription publique est désactivée dans Supabase.
 - [ ] La navigation entre les 5 onglets fonctionne en mode plein écran sur iOS avec fond `#000000` et respect de la Safe Area basse.
+
+---
+
+## ⚠️ Points d'Attention pour le Développement UI (Issus de l'Audit Pré-Dev)
+1. **Safe Area Haute sur `PageHeader.tsx`** : Appliquer systématiquement le padding supérieur dynamique `pt-[env(safe-area-inset-top)]` pour éviter que les titres et boutons d'en-tête n'entrent en collision avec l'encoche iPhone ou la Dynamic Island.
+2. **Dimensionnement des Bottom Sheets Vaul** : Pour tous les tiroirs de formulaires et de saisie (ex: `AddItemDrawer`, `ProfileTargetsDrawer`), borner la hauteur maximale avec `max-h-[85vh]` pour conserver le geste de balayage naturel vers le bas et dégager la barre de statut iOS.

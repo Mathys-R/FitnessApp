@@ -27,7 +27,13 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Création automatique du profil lors de l'inscription d'un utilisateur
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$ BEGIN INSERT INTO public.profiles (id, display_name) VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1))); RETURN NEW; END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, display_name)
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1)));
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
@@ -391,7 +397,7 @@ BEGIN
   WHERE p.id <> auth.uid()
   LIMIT 1;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 GRANT EXECUTE ON FUNCTION public.get_partner_info() TO authenticated;
 
@@ -409,6 +415,12 @@ DECLARE
   v_new_entry_id UUID;
   v_copied_count INTEGER := 0;
 BEGIN
+  -- Contrôle d'autorisation strict BOLA/IDOR (OWASP API1:2023)
+  IF p_source_user_id <> v_caller_id 
+     AND NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = p_source_user_id AND id <> v_caller_id) THEN
+    RAISE EXCEPTION 'Accès refusé aux données de cet utilisateur';
+  END IF;
+
   IF NOT EXISTS (SELECT 1 FROM public.daily_logs WHERE id = p_target_daily_log_id AND user_id = v_caller_id) THEN
     RAISE EXCEPTION 'Accès refusé au journal cible';
   END IF;
@@ -453,7 +465,7 @@ BEGIN
 
   RETURN v_copied_count;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 GRANT EXECUTE ON FUNCTION public.copy_meal_entries(UUID, DATE, meal_category, UUID, meal_category) TO authenticated;
 
@@ -463,7 +475,7 @@ RETURNS JSONB AS $$
 BEGIN
   RETURN jsonb_build_object('status', 'ok', 'timestamp', NOW());
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 GRANT EXECUTE ON FUNCTION public.keepalive_ping() TO anon, authenticated;
 

@@ -84,44 +84,51 @@ export async function finishAndSaveWorkoutSession(params: {
         .eq('user_id', user.id)
         .eq('exercise_id', ex.exercise_id);
     }
+  }
 
-    const { data: sessionEx, error: exErr } = await supabase
+  if (params.exercises.length > 0) {
+    const exRows = params.exercises.map((ex, i) => ({
+      session_id: sessionId,
+      user_id: user.id,
+      exercise_id: ex.exercise_id,
+      order_index: i,
+      session_note: ex.session_note.trim() || null,
+    }));
+
+    const { data: insertedEx, error: exErr } = await supabase
       .from('workout_session_exercises')
-      .insert({
-        session_id: sessionId,
-        user_id: user.id,
-        exercise_id: ex.exercise_id,
-        order_index: i,
-        session_note: ex.session_note.trim() || null,
-      })
-      .select('id')
-      .single();
+      .insert(exRows)
+      .select('id, order_index');
 
-    if (exErr || !sessionEx) throw new Error(`Erreur sauvegarde exercice : ${exErr?.message}`);
+    if (exErr || !insertedEx) throw new Error(`Erreur sauvegarde exercices : ${exErr?.message}`);
+    const idByOrder = new Map(insertedEx.map((r) => [r.order_index, r.id]));
 
-    const setsWithVerifiedPr = recomputeSessionSetsPrFlags(
-      ex.sets,
-      ex.historical_max_weight_kg,
-      ex.historical_max_1rm_kg
-    );
+    const allCompletedSets = params.exercises.flatMap((ex, i) => {
+      const sessionExId = idByOrder.get(i);
+      if (!sessionExId) return [];
+      const verifiedPrs = recomputeSessionSetsPrFlags(
+        ex.sets,
+        ex.historical_max_weight_kg,
+        ex.historical_max_1rm_kg
+      );
+      return verifiedPrs
+        .filter((s) => s.is_completed)
+        .map((s, idx) => ({
+          session_exercise_id: sessionExId,
+          user_id: user.id,
+          exercise_id: ex.exercise_id,
+          set_number: idx + 1,
+          weight_kg: Number.parseFloat(s.weight_input.replace(',', '.')) || 0,
+          reps: Number.parseInt(s.reps_input, 10) || 0,
+          rest_seconds: s.rest_seconds,
+          is_warmup: s.is_warmup,
+          is_completed: true,
+          is_pr: s.is_pr,
+        }));
+    });
 
-    const completedSets = setsWithVerifiedPr
-      .filter((s) => s.is_completed)
-      .map((s, idx) => ({
-        session_exercise_id: sessionEx.id,
-        user_id: user.id,
-        exercise_id: ex.exercise_id,
-        set_number: idx + 1,
-        weight_kg: Number.parseFloat(s.weight_input.replace(',', '.')) || 0,
-        reps: Number.parseInt(s.reps_input, 10) || 0,
-        rest_seconds: s.rest_seconds,
-        is_warmup: s.is_warmup,
-        is_completed: true,
-        is_pr: s.is_pr,
-      }));
-
-    if (completedSets.length > 0) {
-      const { error: setsErr } = await supabase.from('workout_sets').insert(completedSets);
+    if (allCompletedSets.length > 0) {
+      const { error: setsErr } = await supabase.from('workout_sets').insert(allCompletedSets);
       if (setsErr) throw new Error(`Erreur sauvegarde séries : ${setsErr.message}`);
     }
   }

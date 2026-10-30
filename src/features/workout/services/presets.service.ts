@@ -2,6 +2,12 @@
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/types/database.types';
 import type { ActiveWorkoutExercise } from '../store/active-workout.store';
+import {
+  getExerciseGhostAndRecords,
+  type GhostAndRecordResult,
+} from './ghost-records.service';
+
+export { getExerciseGhostAndRecords, type GhostAndRecordResult };
 
 export type WorkoutPresetRow = Database['public']['Tables']['workout_presets']['Row'];
 export type WorkoutPresetExerciseRow = Database['public']['Tables']['workout_preset_exercises']['Row'];
@@ -14,110 +20,8 @@ export interface WorkoutPresetWithExercises extends WorkoutPresetRow {
   >;
 }
 
-export interface GhostAndRecordResult {
-  pinned_note: string;
-  historical_max_weight_kg: number;
-  historical_max_1rm_kg: number;
-  last_session_sets: Array<{
-    set_number: number;
-    weight_kg: number;
-    reps: number;
-    rest_seconds: number;
-  }>;
-}
-
 /**
- * 1. Récupère pour un exercice :
- * - La note épinglée permanente (user_exercise_notes)
- * - Les séries de la DERNIÈRE séance validée ('completed') triée par `session_date DESC` (Ghost Values)
- * - Le record historique de poids et de 1RM Epley (en excluant optionnellement une séance en cours de ré-édition)
- */
-export async function getExerciseGhostAndRecords(
-  exerciseId: string,
-  excludeSessionId?: string | null
-): Promise<GhostAndRecordResult> {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Non authentifié');
-
-  const { data: noteRow } = await supabase
-    .from('user_exercise_notes')
-    .select('pinned_note')
-    .eq('user_id', user.id)
-    .eq('exercise_id', exerciseId)
-    .maybeSingle();
-
-  let sessionsQuery = supabase
-    .from('workout_session_exercises')
-    .select(`
-      id,
-      session_id,
-      session:workout_sessions!inner (
-        session_date,
-        status,
-        created_at
-      ),
-      workout_sets (
-        set_number,
-        weight_kg,
-        reps,
-        rest_seconds,
-        is_warmup,
-        is_completed,
-        epley_1rm
-      )
-    `)
-    .eq('user_id', user.id)
-    .eq('exercise_id', exerciseId)
-    .eq('session.status', 'completed'); // Correctif PostgREST : utilisation de l'alias `session`
-
-  if (excludeSessionId) {
-    sessionsQuery = sessionsQuery.neq('session_id', excludeSessionId);
-  }
-
-  const { data: allCompletedEntries } = await sessionsQuery;
-
-  // Tri strict sur `session_date DESC` (date de l'agenda) puis `created_at DESC`
-  const sortedEntries = [...(allCompletedEntries ?? [])].sort((a, b) => {
-    const sessA = a.session as unknown as { session_date: string; created_at: string };
-    const sessB = b.session as unknown as { session_date: string; created_at: string };
-    const dateCmp = sessB.session_date.localeCompare(sessA.session_date);
-    return dateCmp !== 0 ? dateCmp : sessB.created_at.localeCompare(sessA.created_at);
-  });
-
-  const lastEntry = sortedEntries[0];
-  const lastSets = (lastEntry?.workout_sets ?? [])
-    .filter((s) => s.is_completed)
-    .sort((a, b) => a.set_number - b.set_number)
-    .map((s) => ({
-      set_number: s.set_number,
-      weight_kg: Number(s.weight_kg),
-      reps: s.reps,
-      rest_seconds: s.rest_seconds,
-    }));
-
-  // Calcul du record historique sur toutes les séances validées (hors séance ré-éditée éventuelle)
-  let maxWeightKg = 0;
-  let max1RmKg = 0;
-  for (const entry of sortedEntries) {
-    for (const s of entry.workout_sets ?? []) {
-      if (s.is_completed && !s.is_warmup) {
-        if (Number(s.weight_kg) > maxWeightKg) maxWeightKg = Number(s.weight_kg);
-        if (Number(s.epley_1rm) > max1RmKg) max1RmKg = Number(s.epley_1rm);
-      }
-    }
-  }
-
-  return {
-    pinned_note: noteRow?.pinned_note ?? '',
-    historical_max_weight_kg: maxWeightKg,
-    historical_max_1rm_kg: max1RmKg,
-    last_session_sets: lastSets,
-  };
-}
-
-/**
- * 2. Liste tous les Presets de l'utilisateur avec leurs exercices ordonnés
+ * 1. Liste tous les Presets de l'utilisateur avec leurs exercices ordonnés
  */
 export async function getWorkoutPresets(): Promise<WorkoutPresetWithExercises[]> {
   const supabase = createClient();
@@ -141,7 +45,7 @@ export async function getWorkoutPresets(): Promise<WorkoutPresetWithExercises[]>
 }
 
 /**
- * 3. Construit les exercices prêts pour `useActiveWorkoutStore` à partir d'un Preset
+ * 2. Construit les exercices prêts pour `useActiveWorkoutStore` à partir d'un Preset
  * en injectant automatiquement les Ghost Values et les records historiques.
  */
 export async function buildActiveExercisesFromPreset(
@@ -188,7 +92,7 @@ export async function buildActiveExercisesFromPreset(
 }
 
 /**
- * 4. Supprime un Preset
+ * 3. Supprime un Preset
  */
 export async function deleteWorkoutPreset(presetId: string): Promise<void> {
   const supabase = createClient();
@@ -196,3 +100,90 @@ export async function deleteWorkoutPreset(presetId: string): Promise<void> {
   if (error) throw new Error(`Erreur suppression preset : ${error.message}`);
 }
 
+export interface CreatePresetExerciseInput {
+  exercise_id: string;
+  order_index?: number;
+  target_sets?: number | null;
+  default_weight_kg?: number | null;
+  default_reps?: number | null;
+  target_rest_seconds?: number | null;
+}
+
+/**
+ * 4. Crée un nouveau Preset avec ses exercices associés
+ */
+export async function createWorkoutPreset(params: {
+  name: string;
+  description?: string | null;
+  exercises?: CreatePresetExerciseInput[];
+}): Promise<string> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Non authentifié');
+
+  const { data: preset, error: presetErr } = await supabase
+    .from('workout_presets')
+    .insert({
+      user_id: user.id,
+      name: params.name.trim(),
+      description: params.description?.trim() || null,
+    })
+    .select('id')
+    .single();
+
+  if (presetErr || !preset) throw new Error(`Erreur création preset : ${presetErr?.message}`);
+
+  if (params.exercises && params.exercises.length > 0) {
+    const exRows = params.exercises.map((ex, idx) => ({
+      preset_id: preset.id,
+      exercise_id: ex.exercise_id,
+      order_index: ex.order_index ?? idx,
+      target_sets: ex.target_sets ?? 3,
+      default_weight_kg: ex.default_weight_kg ?? null,
+      default_reps: ex.default_reps ?? null,
+      target_rest_seconds: ex.target_rest_seconds ?? 120,
+    }));
+    const { error: exErr } = await supabase.from('workout_preset_exercises').insert(exRows);
+    if (exErr) throw new Error(`Erreur ajout exercices preset : ${exErr.message}`);
+  }
+
+  return preset.id;
+}
+
+/**
+ * 5. Met à jour un Preset existant (nom, description et liste d'exercices)
+ */
+export async function updateWorkoutPreset(
+  presetId: string,
+  params: {
+    name?: string;
+    description?: string | null;
+    exercises?: CreatePresetExerciseInput[];
+  }
+): Promise<void> {
+  const supabase = createClient();
+  if (params.name || params.description !== undefined) {
+    const updates: Partial<WorkoutPresetRow> = {};
+    if (params.name) updates.name = params.name.trim();
+    if (params.description !== undefined) updates.description = params.description?.trim() || null;
+    const { error } = await supabase.from('workout_presets').update(updates).eq('id', presetId);
+    if (error) throw new Error(`Erreur modification preset : ${error.message}`);
+  }
+
+  if (params.exercises !== undefined) {
+    await supabase.from('workout_preset_exercises').delete().eq('preset_id', presetId);
+    if (params.exercises.length > 0) {
+      const exRows = params.exercises.map((ex, idx) => ({
+        preset_id: presetId,
+        exercise_id: ex.exercise_id,
+        order_index: ex.order_index ?? idx,
+        target_sets: ex.target_sets ?? 3,
+        default_weight_kg: ex.default_weight_kg ?? null,
+        default_reps: ex.default_reps ?? null,
+        target_rest_seconds: ex.target_rest_seconds ?? 120,
+      }));
+      const { error: exErr } = await supabase.from('workout_preset_exercises').insert(exRows);
+      if (exErr) throw new Error(`Erreur mise à jour exercices preset : ${exErr.message}`);
+    }
+  }
+}

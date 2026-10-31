@@ -701,3 +701,6 @@ export interface Database {
   };
 }
 
+export type MealCategory = Database['public']['Enums']['meal_category'];
+
+

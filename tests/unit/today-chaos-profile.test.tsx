@@ -13,6 +13,7 @@ import {
   updateProfileTargets,
   type ProfileRow,
 } from '@/features/daily-log/services/profile.service';
+import { getDailyNutrition } from '@/features/nutrition/services/entries.service';
 import { toast } from 'sonner';
 
 const mockProfile: ProfileRow = {
@@ -43,9 +44,7 @@ const mockDailyLog: DailyLogRow = {
   updated_at: '2026-10-30T06:30:00Z',
 };
 
-vi.mock('@number-flow/react', () => ({
-  default: ({ value }: { value: number }) => <span>{value}</span>,
-}));
+vi.mock('@number-flow/react', () => ({ default: ({ value }: { value: number }) => <span>{value}</span> }));
 
 vi.mock('@/features/daily-log/services/log.service', () => ({
   getOrCreateDailyLog: vi.fn(),
@@ -56,6 +55,19 @@ vi.mock('@/features/daily-log/services/log.service', () => ({
 vi.mock('@/features/daily-log/services/profile.service', () => ({
   getCurrentProfile: vi.fn(),
   updateProfileTargets: vi.fn(),
+}));
+
+// Cockpit Phase 6 : nutrition du jour, bandeau TDEE et carte séance du jour
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), prefetch: vi.fn() }) }));
+vi.mock('@/features/nutrition/services/entries.service', () => ({ getDailyNutrition: vi.fn() }));
+vi.mock('@/features/analytics/services/kpis.service', () => ({
+  getTdee14DaysAnalysis: vi.fn().mockResolvedValue({
+    status: 'calibrating', validNutritionDays: 3, requiredNutritionDays: 10, hasEnoughWeightSpan: false, excludedDaysCount: 0,
+  }),
+}));
+vi.mock('@/features/workout/services/today-session.service', () => ({
+  getTodayWorkoutOverview: vi.fn().mockResolvedValue({ kind: 'none' }),
+  buildStartPayloadFromPlannedSession: vi.fn(),
 }));
 
 vi.mock('sonner', () => ({
@@ -69,24 +81,20 @@ describe('ProfileTargetsDrawer Chaos & Monkey Testing', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getOrCreateDailyLog).mockResolvedValue({ ...mockDailyLog });
+    vi.mocked(getDailyNutrition).mockResolvedValue({ dailyLog: { ...mockDailyLog }, entries: [] });
     vi.mocked(getPreviousWeightEma).mockResolvedValue(82.0);
     vi.mocked(getCurrentProfile).mockResolvedValue({ ...mockProfile });
   });
 
-  it('interaction nominale : ouverture du tiroir depuis TodayPage via action header et carte', async () => {
+  it('interaction nominale : ouverture du tiroir depuis TodayPage via l action header', async () => {
     render(<TodayPage />);
 
-    // 1. Ouvrir via l icône d action du header
+    // Ouvrir via l icône d action du header (seul point d accès cibles du cockpit)
     const actionBtn = screen.getByLabelText('Modifier mes objectifs nutritionnels');
     fireEvent.click(actionBtn);
 
     expect(screen.getByText('Objectifs nutritionnels')).toBeDefined();
-
-    // 2. Ouvrir via le résumé calories (carte cliquable)
-    const caloriesCard = screen.getByText('Objectif Calories').closest('button')!;
-    fireEvent.click(caloriesCard);
-
-    expect(screen.getByText('Objectifs nutritionnels')).toBeDefined();
+    await waitFor(() => expect(getDailyNutrition).toHaveBeenCalledWith(expect.any(String)));
   });
 
   it('chaos test : ProfileTargetsDrawer clampe les valeurs négatives et extrêmes', async () => {

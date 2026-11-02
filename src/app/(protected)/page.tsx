@@ -1,64 +1,42 @@
 // src/app/(protected)/page.tsx
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { SlidersHorizontal } from 'lucide-react';
-import NumberFlow from '@number-flow/react';
+import { useState } from 'react';
+import Link from 'next/link';
+import { Plus, RotateCw, SlidersHorizontal } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { getLocalTodayIso, formatShortFrenchDate } from '@/lib/date.utils';
-import {
-  getOrCreateDailyLog,
-  getPreviousWeightEma,
-  type DailyLogRow,
-} from '@/features/daily-log/services/log.service';
-import {
-  getCurrentProfile,
-  type ProfileRow,
-} from '@/features/daily-log/services/profile.service';
+import { formatShortFrenchDate } from '@/lib/date.utils';
+import { useLocalTodayIso } from '@/lib/hooks/useLocalTodayIso';
+import { useTodayCockpitData } from '@/features/daily-log/hooks/useTodayCockpitData';
 import { WeightQuickInput } from '@/features/daily-log/components/WeightQuickInput';
 import { ProfileTargetsDrawer } from '@/features/daily-log/components/ProfileTargetsDrawer';
+import { DailyMacroSummary } from '@/features/nutrition/components/DailyMacroSummary';
+import { TdeeBanner } from '@/features/analytics/components/TdeeBanner';
+import { TodayWorkoutCard } from '@/features/workout/components/TodayWorkoutCard';
 
 export default function TodayPage() {
-  const todayIso = getLocalTodayIso();
-  const formattedDate = formatShortFrenchDate(todayIso);
+  // null au SSR et pendant l'hydratation : la date de l'appareil n'est lue qu'au client.
+  const todayIso = useLocalTodayIso();
+  const {
+    dailyLog,
+    consumedMacros,
+    profile,
+    previousEma,
+    isLoading,
+    hasError,
+    reload,
+    setDailyLog,
+    setProfile,
+  } = useTodayCockpitData(todayIso);
 
-  const [dailyLog, setDailyLog] = useState<DailyLogRow | null>(null);
-  const [profile, setProfile] = useState<ProfileRow | null>(null);
-  const [previousEma, setPreviousEma] = useState<number | null>(null);
   const [isTargetsOpen, setIsTargetsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadData = useCallback(async () => {
-    try {
-      const [logRow, profRow, prevEma] = await Promise.all([
-        getOrCreateDailyLog(todayIso),
-        getCurrentProfile(),
-        getPreviousWeightEma(todayIso),
-      ]);
-      setDailyLog(logRow);
-      setProfile(profRow);
-      setPreviousEma(prevEma);
-    } catch {
-      // Les erreurs sont isolées pour ne pas bloquer l'interface
-    } finally {
-      setIsLoading(false);
-    }
-  }, [todayIso]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  const targetKcal = dailyLog?.target_kcal ?? profile?.current_target_kcal ?? 2000;
-  const targetP = dailyLog?.target_p ?? profile?.current_target_p ?? 150;
-  const targetG = dailyLog?.target_g ?? profile?.current_target_g ?? 200;
-  const targetL = dailyLog?.target_l ?? profile?.current_target_l ?? 60;
+  const [tdeeKey, setTdeeKey] = useState(0);
 
   return (
     <div className="flex flex-col">
       <PageHeader
         title="Aujourd'hui"
-        subtitle={formattedDate}
+        subtitle={todayIso ? formatShortFrenchDate(todayIso) : '\u00A0'}
         action={
           <button
             type="button"
@@ -72,59 +50,63 @@ export default function TodayPage() {
       />
 
       <div className="space-y-4 px-4 py-4">
-        {/* Résumé Calories & Macros (Cliquable pour modifier les objectifs) */}
-        <button
-          type="button"
-          onClick={() => setIsTargetsOpen(true)}
-          className="ios-card w-full space-y-3 p-4 text-left active:scale-[0.99] transition-transform"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
-              Objectif Calories
-            </span>
-            <span className="text-xs font-medium text-[#0A84FF]">Modifier</span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-white tabular-nums">0</span>
-            <span className="text-sm text-[#8E8E93] tabular-nums">
-              / <NumberFlow value={targetKcal} /> kcal
-            </span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#2C2C2E]">
-            <div className="h-full rounded-full bg-[#0A84FF]" style={{ width: '0%' }} />
-          </div>
-          <div className="flex items-center justify-between pt-1 text-xs tabular-nums text-[#8E8E93]">
-            <span>P : <strong className="text-white">{targetP}g</strong></span>
-            <span>G : <strong className="text-white">{targetG}g</strong></span>
-            <span>L : <strong className="text-white">{targetL}g</strong></span>
-          </div>
-        </button>
+        {/* 1. Bandeau maintenance TDEE 14j */}
+        <TdeeBanner key={todayIso ?? 'ssr'} variant="compact" refreshKey={tdeeKey} />
 
-        {/* Poids & Tendance EMA 7j */}
-        {isLoading || !dailyLog ? (
-          <div className="ios-card p-4 min-h-[88px] flex items-center justify-center">
-            <span className="text-xs text-[#8E8E93]">Chargement de la pesée...</span>
+        {/* 2. Synthèse calories & macros du jour */}
+        {dailyLog ? (
+          <div className="space-y-2">
+            <DailyMacroSummary dailyLog={dailyLog} consumedMacros={consumedMacros} />
+            <Link
+              href="/nutrition"
+              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#1C1C1E] text-base font-semibold text-[#0A84FF] active:scale-[0.99] transition-transform"
+            >
+              <Plus className="h-4 w-4" /> Ajouter un repas
+            </Link>
+          </div>
+        ) : hasError && !isLoading ? (
+          <div role="alert" className="ios-card space-y-3 p-4">
+            <p className="text-sm text-[#FF453A]">Impossible de charger le journal du jour.</p>
+            <button
+              type="button"
+              onClick={() => void reload()}
+              className="flex min-h-[44px] items-center gap-2 rounded-xl bg-[#2C2C2E] px-4 text-sm font-semibold text-white active:scale-95"
+            >
+              <RotateCw className="h-4 w-4" /> Réessayer
+            </button>
           </div>
         ) : (
-          <WeightQuickInput
-            dailyLog={dailyLog}
-            previousEmaKg={previousEma}
-            onWeightUpdated={(updated) => setDailyLog(updated)}
+          <div
+            aria-busy="true"
+            aria-label="Chargement du journal"
+            className="h-[236px] animate-pulse rounded-2xl bg-[#1C1C1E]"
           />
         )}
 
-        {/* Suivi Musculation */}
-        <div className="ios-card space-y-3 p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
-              Séance du jour
-            </span>
-            <span className="text-xs text-[#8E8E93]">Phase 1</span>
+        {/* 3. Poids du matin & EMA 7j */}
+        {dailyLog ? (
+          <WeightQuickInput
+            dailyLog={dailyLog}
+            previousEmaKg={previousEma}
+            onWeightUpdated={(updated) => {
+              // Pesée antidatée : ne jamais remplacer le journal du jour affiché.
+              if (updated.log_date === todayIso) setDailyLog(updated);
+              else void reload();
+              setTdeeKey((k) => k + 1);
+            }}
+          />
+        ) : (
+          <div className="ios-card flex min-h-[88px] items-center justify-center p-4">
+            <span className="text-xs text-[#8E8E93]">Chargement de la pesée...</span>
           </div>
-          <p className="text-sm text-[#8E8E93]">
-            Aucune séance enregistrée pour aujourd&apos;hui.
-          </p>
-        </div>
+        )}
+
+        {/* 4. Séance du jour (store persisté + date : rendu différé après hydratation) */}
+        {todayIso ? (
+          <TodayWorkoutCard todayIso={todayIso} />
+        ) : (
+          <div className="ios-card h-[104px] animate-pulse" aria-hidden />
+        )}
       </div>
 
       <ProfileTargetsDrawer
@@ -133,7 +115,8 @@ export default function TodayPage() {
         initialProfile={profile}
         onTargetsUpdated={(updatedProfile) => {
           setProfile(updatedProfile);
-          loadData();
+          void reload();
+          setTdeeKey((k) => k + 1);
         }}
       />
     </div>

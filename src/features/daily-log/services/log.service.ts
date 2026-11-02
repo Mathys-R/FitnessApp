@@ -48,6 +48,18 @@ export async function getOrCreateDailyLog(logDate: string): Promise<DailyLogRow>
     .select('*')
     .single();
 
+  // Création concurrente (StrictMode, 2 onglets) : UNIQUE(user_id, log_date) → 23505,
+  // on relit la ligne gagnante sans écraser ses cibles snapshot.
+  if (insertErr?.code === '23505') {
+    const { data: winner, error: refetchErr } = await supabase
+      .from('daily_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('log_date', logDate)
+      .maybeSingle();
+    if (winner) return winner;
+    throw new Error(`Erreur création log journalier : ${refetchErr?.message ?? insertErr.message}`);
+  }
   if (insertErr || !created) throw new Error(`Erreur création log journalier : ${insertErr?.message}`);
   return created;
 }

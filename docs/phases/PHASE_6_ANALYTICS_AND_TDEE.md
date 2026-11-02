@@ -95,7 +95,7 @@ L'écran d'accueil unifie en un seul coup d'œil les 4 piliers quotidiens :
 
 - [x] **Moteur mathématique TDEE 14j :** `tdee.math.ts` implémenté et vérifié `[OK]` (fenêtre 14j révolus $J-14$ à $J-1$, exclusion $J$ et seuil 50%/manuel, formule thermodynamique).
 - [x] **Services Supabase Analytics & Export :** `kpis.service.ts` (170 l. avec patch PostgREST jointures imbriquées `session_exercise.session.*`) et `export.service.ts` (170 l., JSON + bundle 3 CSVs) implémentés et vérifiés `[OK]`.
-- [ ] **Composants UI Analytics & Cockpits `[À CODER - UI]` :** Développer `TdeeBanner.tsx`, `OneRmChart.tsx`, `MuscleRadar.tsx`, `ExportDataCard.tsx` et assembler les pages `src/app/(protected)/analytics/page.tsx` et `src/app/(protected)/page.tsx`.
+- [x] **Composants UI Analytics & Cockpits `[IMPLÉMENTÉ]` :** Développer `TdeeBanner.tsx`, `OneRmChart.tsx`, `MuscleRadar.tsx`, `ExportDataCard.tsx` et assembler les pages `src/app/(protected)/analytics/page.tsx` et `src/app/(protected)/page.tsx`.
 - [ ] **Test Stabilité & Exclusion TDEE :**
   - Vérifier que saisir un petit-déjeuner ou un déjeuner aujourd'hui ($J$) ne fait pas fluctuer le TDEE du jour (calculé sur $J-14 \dots J-1$).
   - Vérifier qu'une journée passée avec `< 50 %` de la cible ou avec `exclude_from_tdee = true` est écartée de la moyenne 14j.

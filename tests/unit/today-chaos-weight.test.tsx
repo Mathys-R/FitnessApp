@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, onTestFinished } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import TodayPage from '@/app/(protected)/page';
 import { WeightQuickInput } from '@/features/daily-log/components/WeightQuickInput';
@@ -9,6 +9,7 @@ import {
   logWeightAndRecalculateEma,
   type DailyLogRow,
 } from '@/features/daily-log/services/log.service';
+import { getDailyNutrition } from '@/features/nutrition/services/entries.service';
 import { getCurrentProfile } from '@/features/daily-log/services/profile.service';
 import { toast } from 'sonner';
 
@@ -44,6 +45,19 @@ vi.mock('@/features/daily-log/services/profile.service', () => ({
   updateProfileTargets: vi.fn(),
 }));
 
+// Cockpit Phase 6 : nutrition du jour, bandeau TDEE et carte séance du jour
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), prefetch: vi.fn() }) }));
+vi.mock('@/features/nutrition/services/entries.service', () => ({ getDailyNutrition: vi.fn() }));
+vi.mock('@/features/analytics/services/kpis.service', () => ({
+  getTdee14DaysAnalysis: vi.fn().mockResolvedValue({
+    status: 'calibrating', validNutritionDays: 3, requiredNutritionDays: 10, hasEnoughWeightSpan: false, excludedDaysCount: 0,
+  }),
+}));
+vi.mock('@/features/workout/services/today-session.service', () => ({
+  getTodayWorkoutOverview: vi.fn().mockResolvedValue({ kind: 'none' }),
+  buildStartPayloadFromPlannedSession: vi.fn(),
+}));
+
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -55,6 +69,7 @@ describe('WeightQuickInput Chaos & Monkey Testing', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getOrCreateDailyLog).mockResolvedValue({ ...mockDailyLog });
+    vi.mocked(getDailyNutrition).mockResolvedValue({ dailyLog: { ...mockDailyLog }, entries: [] });
     vi.mocked(getPreviousWeightEma).mockResolvedValue(82.0);
     vi.mocked(getCurrentProfile).mockResolvedValue({
       id: 'user-01',
@@ -75,6 +90,10 @@ describe('WeightQuickInput Chaos & Monkey Testing', () => {
       weight_ema_kg: 82.75,
     };
     vi.mocked(logWeightAndRecalculateEma).mockResolvedValue(updatedLog);
+    // B2 : la mise à jour directe ne vaut que pour la pesée du jour affiché → « aujourd'hui » = log_date.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 9, 30, 9, 0, 0));
+    onTestFinished(() => { vi.useRealTimers(); });
 
     render(<TodayPage />);
     await waitFor(() => {

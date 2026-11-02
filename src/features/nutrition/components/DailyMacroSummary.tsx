@@ -92,39 +92,41 @@ export function DailyMacroSummary({
         })}
       </div>
 
-      {/* Switch iOS d'exclusion TDEE */}
-      <div className="border-t border-[#2C2C2E] pt-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-white">Journée atypique (exclure du TDEE)</p>
-            <p className="text-xs text-[#8E8E93]">
-              N&apos;affectera pas le calcul de votre dépense sur 14 jours
-            </p>
-          </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isExcluded}
-            aria-label="Journée atypique (exclure du TDEE)"
-            disabled={isTogglingTdee}
-            onClick={() => onToggleExcludeTdee?.(!isExcluded)}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center p-1 transition-opacity disabled:opacity-50"
-          >
-            <div
-              className={`relative h-[31px] w-[51px] rounded-full transition-colors duration-200 ${
-                isExcluded ? 'bg-[#34C759]' : 'bg-[#39393D]'
-              }`}
-            >
-              <motion.div
-                className="h-[27px] w-[27px] rounded-full bg-white shadow-md"
-                animate={{ x: isExcluded ? 22 : 2 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                style={{ marginTop: 2 }}
-              />
+      {/* Switch iOS d'exclusion TDEE (masqué si non pilotable, ex : cockpit) */}
+      {onToggleExcludeTdee && (
+        <div className="border-t border-[#2C2C2E] pt-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-white">Journée atypique (exclure du TDEE)</p>
+              <p className="text-xs text-[#8E8E93]">
+                N&apos;affectera pas le calcul de votre dépense sur 14 jours
+              </p>
             </div>
-          </button>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isExcluded}
+              aria-label="Journée atypique (exclure du TDEE)"
+              disabled={isTogglingTdee}
+              onClick={() => onToggleExcludeTdee(!isExcluded)}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center p-1 transition-opacity disabled:opacity-50"
+            >
+              <div
+                className={`relative h-[31px] w-[51px] rounded-full transition-colors duration-200 ${
+                  isExcluded ? 'bg-[#34C759]' : 'bg-[#39393D]'
+                }`}
+              >
+                <motion.div
+                  className="h-[27px] w-[27px] rounded-full bg-white shadow-md"
+                  animate={{ x: isExcluded ? 22 : 2 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  style={{ marginTop: 2 }}
+                />
+              </div>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

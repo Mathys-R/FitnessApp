@@ -84,8 +84,9 @@ export function WeightQuickInput({ dailyLog, previousEmaKg, onWeightUpdated, cla
       </Drawer.Trigger>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-        <Drawer.Content className="fixed bottom-0 inset-x-0 z-50 bg-[#1C1C1E] border-t border-[#38383A] rounded-t-[20px] p-6 pb-8 focus:outline-none">
-          <Drawer.Handle className="mx-auto mb-4 bg-[#38383A]" />
+        <Drawer.Content className="fixed bottom-0 inset-x-0 z-50 flex max-h-[85vh] flex-col bg-[#1C1C1E] border-t border-[#38383A] rounded-t-[20px] pt-6 focus:outline-none">
+          <Drawer.Handle className="mx-auto mb-4 shrink-0 bg-[#38383A]" />
+          <div className="overflow-y-auto px-6 pb-[calc(2rem+env(safe-area-inset-bottom))]">
           <Drawer.Title className="text-lg font-semibold text-center mb-6 text-white">Enregistrer une pesée</Drawer.Title>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
@@ -105,6 +106,7 @@ export function WeightQuickInput({ dailyLog, previousEmaKg, onWeightUpdated, cla
               {isSaving ? 'Enregistrement...' : 'Enregistrer'}
             </button>
           </form>
+          </div>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
